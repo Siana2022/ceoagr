@@ -181,7 +181,7 @@ $$;
 -- security invoker: RLS decides which entries and rates the caller can see.
 -- cost is null when the caller cannot read the rates.
 create function public.time_report_rows(p_from date, p_to date)
-returns table (case_id uuid, user_id uuid, minutes bigint, billable_minutes bigint, cost numeric)
+returns table (case_id uuid, user_id uuid, minutes bigint, billable_minutes bigint, cost numeric, value numeric)
 language sql
 stable
 set search_path = ''
@@ -191,10 +191,11 @@ as $$
     e.user_id,
     sum(e.minutes)::bigint,
     sum(case when e.billable then e.minutes else 0 end)::bigint,
-    sum(e.minutes / 60.0 * r.cost_per_hour)
+    sum(e.minutes / 60.0 * r.cost_per_hour),
+    sum(case when e.billable then e.minutes / 60.0 * r.price_per_hour else 0 end)
   from public.time_entries e
   left join lateral (
-    select mr.cost_per_hour from public.member_rates mr
+    select mr.cost_per_hour, mr.price_per_hour from public.member_rates mr
     where mr.user_id = e.user_id
       and mr.valid_from <= (e.started_at at time zone 'Europe/Madrid')::date
     order by mr.valid_from desc
@@ -205,11 +206,30 @@ as $$
   group by e.case_id, e.user_id;
 $$;
 
+-- Total logged hours per case, for anyone who can see the case (not per person).
+create function public.case_hours(p_case_ids uuid[])
+returns table (case_id uuid, minutes bigint)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select e.case_id, sum(e.minutes)::bigint
+  from public.time_entries e
+  join public.cases c on c.id = e.case_id
+  where e.case_id = any (p_case_ids)
+    and e.ended_at is not null
+    and public.can_view_record('case', c.id, c.owner_id, c.org_id)
+  group by e.case_id;
+$$;
+
 revoke all on function public.time_entries_check_budget() from public, anon;
 revoke all on function public.set_time_alert_thresholds(int[]) from public, anon;
 revoke all on function public.time_report_rows(date, date) from public, anon;
 grant execute on function public.set_time_alert_thresholds(int[]) to authenticated;
 grant execute on function public.time_report_rows(date, date) to authenticated;
+revoke all on function public.case_hours(uuid[]) from public, anon;
+grant execute on function public.case_hours(uuid[]) to authenticated;
 
 -- --------------------------------------------------------------------- RLS
 alter table public.member_rates enable row level security;

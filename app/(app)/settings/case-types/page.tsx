@@ -43,6 +43,7 @@ export default async function CaseTypesPage() {
               <td>{t.pipeline.length}</td>
               <td>{t.custom_schema.length}</td>
               <td className="text-right">
+                <Link href={`/settings/case-types/${t.id}/tasks`} className="link mr-4">Tareas por fase</Link>
                 {t.archived ? (
                   <form action={restoreCaseType.bind(null, t.id)}>
                     <button type="submit" className="link">Restaurar</button>

@@ -22,6 +22,8 @@ function eventText(e: CaseEvent, pipeline: PipelineStatus[], names: Map<string, 
       return `Estado: ${label(e.payload.from)} → ${label(e.payload.to)}`;
     case "owner_changed":
       return `Responsable: ${names.get(String(e.payload.from)) ?? "—"} → ${names.get(String(e.payload.to)) ?? "—"}`;
+    case "tasks_created":
+      return `Tareas automáticas creadas: ${String(e.payload.count)} (fase ${label(e.payload.status)})`;
     case "archived":
       return "Archivado";
     case "restored":
