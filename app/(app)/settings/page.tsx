@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { isStaffRole, ROLE_LABELS, type AppRole } from "@/lib/modules/nav";
+import { isStaffRole, type AppRole } from "@/lib/modules/nav";
 import { CONFIGURABLE_FIELDS, FIELD_LABELS } from "@/lib/modules/contacts/schema";
 import { getRequiredFields } from "@/lib/modules/contacts/queries";
 import { saveRequiredFields } from "@/lib/modules/contacts/actions";
@@ -14,18 +14,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
   const { data: role } = await supabase.rpc("current_user_role");
   if (!role || !isStaffRole(role as AppRole)) redirect("/");
 
-  const { data: members } = await supabase
-    .from("memberships")
-    .select("user_id, role, active, created_at")
-    .order("created_at");
-
   const required = await getRequiredFields();
-  const ids = (members ?? []).map((m) => m.user_id);
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("user_id, full_name")
-    .in("user_id", ids);
-  const names = new Map((profiles ?? []).map((p) => [p.user_id, p.full_name]));
 
   return (
     <div className="flex flex-col gap-6">
@@ -33,11 +22,21 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
 
       <nav aria-label="Secciones de ajustes" className="flex flex-wrap gap-2 text-sm">
         {(role === "owner" || role === "admin") && (
+          <Link href="/settings/team" className="btn btn-secondary btn-sm">Equipo y usuarios</Link>
+        )}
+        {(role === "owner" || role === "admin") && (
           <Link href="/settings/case-types" className="btn btn-secondary btn-sm">Tipos de expediente</Link>
         )}
         <Link href="/settings/resources" className="btn btn-secondary btn-sm">Recursos de agenda</Link>
         <Link href="/settings/templates" className="btn btn-secondary btn-sm">Plantillas de documento</Link>
       </nav>
+
+      {role === "owner" || role === "admin" ? (
+        <section className="card flex max-w-2xl flex-col gap-2 p-6">
+          <h2 className="section-title">Equipo</h2>
+          <Link href="/settings/team" className="link text-sm">Crear usuarios, cambiar roles y restablecer contraseñas</Link>
+        </section>
+      ) : null}
 
       {role === "owner" || role === "admin" ? (
         <section className="card flex max-w-2xl flex-col gap-2 p-6">
@@ -74,25 +73,6 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
         </form>
       </section>
 
-      <h2 className="section-title">Equipo</h2>
-      <div className="table-card max-w-3xl"><table>
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Rol</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(members ?? []).map((m) => (
-            <tr key={m.user_id}>
-              <td>{names.get(m.user_id) || "Sin nombre"}</td>
-              <td>{ROLE_LABELS[m.role as AppRole]}</td>
-              <td>{m.active ? "Activo" : "Inactivo"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table></div>
     </div>
   );
 }

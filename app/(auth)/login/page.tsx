@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import Link from "next/link";
 import { AuthShell } from "@/components/AuthShell";
 import { buttonClass, inputClass } from "@/components/form-styles";
 import { login } from "../actions";
@@ -22,9 +21,6 @@ async function LoginContent({ searchParams }: Pick<PageProps<"/login">, "searchP
         </label>
         <button type="submit" className={`${buttonClass} mt-2`}>Entrar</button>
       </form>
-      <p className="text-sm text-slate-500">
-        ¿No tienes cuenta? <Link href="/signup" className="link">Regístrate</Link>
-      </p>
     </AuthShell>
   );
 }

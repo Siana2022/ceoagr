@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { LogOut } from "lucide-react";
@@ -55,13 +56,15 @@ async function AppShell({ children }: { children: React.ReactNode }) {
 
         <div className="mt-auto border-t border-white/10 p-4">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-sidebar">
-              {initials(displayName)}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{displayName}</p>
-              <p className="truncate text-xs text-white/55">{ROLE_LABELS[role]}</p>
-            </div>
+            <Link href="/account" title="Mi perfil" className="flex min-w-0 flex-1 items-center gap-3 rounded-lg hover:bg-white/8">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-sidebar">
+                {initials(displayName)}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium">{displayName}</span>
+                <span className="block truncate text-xs text-white/55">{ROLE_LABELS[role]}</span>
+              </span>
+            </Link>
             <form action={logout}>
               <button
                 type="submit"
