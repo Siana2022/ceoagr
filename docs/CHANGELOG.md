@@ -10,3 +10,8 @@
 - Claves de Supabase en `.env.local` (no se suben al repo).
 - Invitar usuarios y pantalla de aceptación.
 - shadcn/ui, Vitest, Playwright, CI y test e2e de aislamiento entre organizaciones.
+
+### Layout de la app
+- Menú lateral con secciones por rol (Ajustes solo owner/admin); módulos aún no construidos marcados "Pronto".
+- Panel con tarjetas de contadores (miembros reales; el resto se activará con cada módulo).
+- Ajustes · Equipo: listado de miembros con rol y estado.
