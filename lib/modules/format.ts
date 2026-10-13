@@ -94,3 +94,8 @@ export function todayMadrid() {
 export function isDateString(v: unknown): v is string {
   return typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(`${v}T00:00:00Z`));
 }
+
+// Wall-clock "now" for server components (kept out of render bodies for purity lint).
+export function nowMs() {
+  return Date.now();
+}

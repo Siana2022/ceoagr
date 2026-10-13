@@ -6,6 +6,7 @@ import {
   Briefcase,
   CalendarDays,
   CheckSquare,
+  Clock,
   FileText,
   LayoutDashboard,
   Settings,
@@ -24,6 +25,7 @@ const ICONS: Record<string, LucideIcon> = {
   calendar: CalendarDays,
   documents: FileText,
   time: Timer,
+  clock: Clock,
   opportunities: TrendingUp,
   settings: Settings,
 };

@@ -4,6 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import { getUserId, listTasks } from "@/lib/modules/tasks/queries";
 import { listAppointments } from "@/lib/modules/agenda/queries";
 import { addDays, fmtDate, madridParts, madridToUtc, todayMadrid } from "@/lib/modules/format";
+import { getLastClockEvent } from "@/lib/modules/clock/queries";
+import { clockAction } from "@/lib/modules/clock/actions";
+import { currentState } from "@/lib/modules/clock/calc";
+import { fmtTime } from "@/lib/modules/format";
 import { PRIORITY_LABELS, type Priority } from "@/lib/modules/cases/types";
 
 type Card = { label: string; value: number | null; href: string; icon: LucideIcon; tone: string };
@@ -15,7 +19,7 @@ export default async function HomePage() {
   const dayEnd = madridToUtc(addDays(today, 1), "00:00").toISOString();
   const uid = await getUserId();
 
-  const [contacts, openCases, myTasks, todayAppts, profile, upcoming, agenda] = await Promise.all([
+  const [contacts, openCases, myTasks, todayAppts, profile, upcoming, agenda, lastClock] = await Promise.all([
     supabase.from("contacts").select("*", { count: "exact", head: true }).eq("archived", false),
     supabase.from("cases").select("*", { count: "exact", head: true }).eq("archived", false).is("closed_at", null),
     supabase
@@ -32,7 +36,9 @@ export default async function HomePage() {
     uid ? supabase.from("profiles").select("full_name").eq("user_id", uid).maybeSingle() : Promise.resolve({ data: null }),
     listTasks({ scope: "mine", state: "open", limit: 6 }),
     listAppointments(dayStart, dayEnd),
+    uid ? getLastClockEvent(uid) : Promise.resolve(null),
   ]);
+  const clockState = currentState(lastClock ? [lastClock] : []);
 
   const num = (r: { count: number | null; error: unknown }) => (r.error ? null : (r.count ?? 0));
   const cards: Card[] = [
@@ -51,6 +57,24 @@ export default async function HomePage() {
         <h1 className="page-title">{firstName ? `Hola, ${firstName}` : "Panel"}</h1>
         <p className="page-sub capitalize">{todayLabel}</p>
       </header>
+
+      <section className="card flex flex-wrap items-center justify-between gap-4 p-5">
+        <p className="flex items-center gap-3 text-sm">
+          <span className={`h-2.5 w-2.5 rounded-full ${clockState === "working" ? "bg-emerald-500" : clockState === "paused" ? "bg-amber-500" : "bg-slate-300"}`} aria-hidden="true" />
+          {clockState === "off" && "No estás fichado."}
+          {clockState === "working" && lastClock && `Jornada en curso desde las ${fmtTime(lastClock.at)}.`}
+          {clockState === "paused" && "Jornada en pausa."}
+        </p>
+        <div className="flex items-center gap-3">
+          {clockState === "off" && (
+            <form action={clockAction.bind(null, "in")}>
+              <input type="hidden" name="back" value="/" />
+              <button type="submit" className="btn btn-primary btn-sm">Fichar entrada</button>
+            </form>
+          )}
+          <Link href="/clock" className="link text-sm">Ir a fichaje</Link>
+        </div>
+      </section>
 
       <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map(({ label, value, href, icon: Icon, tone }) => (
