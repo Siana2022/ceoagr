@@ -13,7 +13,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/cases", label: "Expedientes", ready: true },
   { href: "/tasks", label: "Tareas", ready: true },
   { href: "/calendar", label: "Agenda", ready: true },
-  { href: "/documents", label: "Documentos", ready: false },
+  { href: "/documents", label: "Documentos", ready: true },
   { href: "/settings", label: "Ajustes", ready: true, staffOnly: true },
 ];
 

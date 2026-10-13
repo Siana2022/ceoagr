@@ -8,6 +8,7 @@ import { fmtDate, fmtDateTime } from "@/lib/modules/format";
 import { getCurrentRole } from "@/lib/modules/session";
 import { canWrite } from "@/lib/modules/nav";
 import { listTasks } from "@/lib/modules/tasks/queries";
+import { DocumentsSection } from "@/components/documents/DocumentsSection";
 import { TaskTable } from "@/components/tasks/TaskTable";
 import { StatusBadge } from "@/components/cases/StatusBadge";
 import { inputClass } from "@/components/form-styles";
@@ -113,6 +114,8 @@ export default async function CasePage({ params }: PageProps<"/cases/[id]">) {
         </div>
         <TaskTable rows={tasks.rows} names={tasks.names} back={`/cases/${c.id}`} canWrite={writable} showLinks={false} empty="Este expediente no tiene tareas." />
       </section>
+
+      <DocumentsSection caseId={c.id} back={`/cases/${c.id}`} canWrite={writable} />
 
       <section className="flex max-w-2xl flex-col gap-3">
         <h2 className="text-lg font-semibold">Historial</h2>

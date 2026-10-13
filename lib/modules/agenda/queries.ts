@@ -28,3 +28,14 @@ export async function getAppointment(id: string) {
   const { data } = await supabase.from("appointments").select("*").eq("id", id).maybeSingle();
   return (data as Appointment | null) ?? null;
 }
+
+export async function listContactAppointments(contactId: string, limit = 50) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("appointments")
+    .select("*, resources(name, color)")
+    .eq("contact_id", contactId)
+    .order("starts_at", { ascending: false })
+    .limit(limit);
+  return (data ?? []) as unknown as AppointmentListItem[];
+}

@@ -39,6 +39,8 @@ describe.skipIf(!enabled)("cross-organization isolation (RLS)", () => {
   let a: Awaited<ReturnType<typeof makeUser>>;
   let b: Awaited<ReturnType<typeof makeUser>>;
   let contactId: string;
+  let caseId: string;
+  let resourceId: string;
 
   beforeAll(async () => {
     a = await makeUser("a");
@@ -50,6 +52,26 @@ describe.skipIf(!enabled)("cross-organization isolation (RLS)", () => {
       .single();
     if (error) throw error;
     contactId = data.id;
+
+    const type = await a.client
+      .from("case_types")
+      .insert({ name: "Tipo A", slug: "tipo-a", code_prefix: "TA" })
+      .select("id")
+      .single();
+    if (type.error) throw type.error;
+    const kase = await a.client
+      .from("cases")
+      .insert({ contact_id: contactId, case_type_id: type.data.id, title: "Caso de A" })
+      .select("id")
+      .single();
+    if (kase.error) throw kase.error;
+    caseId = kase.data.id;
+
+    const task = await a.client.from("tasks").insert({ case_id: caseId, title: "Tarea de A" });
+    if (task.error) throw task.error;
+    const res = await a.client.from("resources").insert({ name: "Sala A" }).select("id").single();
+    if (res.error) throw res.error;
+    resourceId = res.data.id;
   });
 
   afterAll(async () => {
@@ -91,5 +113,40 @@ describe.skipIf(!enabled)("cross-organization isolation (RLS)", () => {
     expect(members.data?.every((m) => m.org_id === b.orgId)).toBe(true);
     const audit = await b.client.from("audit_log").select("org_id");
     expect(audit.data?.every((r) => r.org_id === b.orgId)).toBe(true);
+  });
+
+  it("B cannot see A's cases, tasks, resources or case types", async () => {
+    for (const table of ["cases", "tasks", "resources", "case_types", "case_events"]) {
+      const { data } = await b.client.from(table).select("id");
+      expect(data, table).toEqual([]);
+    }
+  });
+
+  it("B cannot create records pointing at A's case, contact or resource", async () => {
+    const t = await b.client.from("tasks").insert({ case_id: caseId, title: "intruso" });
+    expect(t.error).not.toBeNull();
+    const c = await b.client.from("cases").insert({ contact_id: contactId, case_type_id: caseId, title: "x" });
+    expect(c.error).not.toBeNull();
+    const ap = await b.client.from("appointments").insert({
+      resource_id: resourceId,
+      title: "intruso",
+      starts_at: "2030-01-01T10:00:00Z",
+      ends_at: "2030-01-01T11:00:00Z",
+    });
+    expect(ap.error).not.toBeNull();
+  });
+
+  it("an appointment cannot overlap another one on the same resource", async () => {
+    const mk = (start: string, end: string) =>
+      a.client.from("appointments").insert({ resource_id: resourceId, title: "x", starts_at: start, ends_at: end });
+    expect((await mk("2030-01-01T10:00:00Z", "2030-01-01T11:00:00Z")).error).toBeNull();
+    expect((await mk("2030-01-01T10:30:00Z", "2030-01-01T11:30:00Z")).error?.code).toBe("23P01");
+  });
+
+  it("documents are only registered under the caller's organization path", async () => {
+    const { error } = await a.client
+      .from("documents")
+      .insert({ case_id: caseId, name: "x.pdf", storage_path: `org/${b.orgId}/case/${caseId}/x.pdf` });
+    expect(error).not.toBeNull();
   });
 });

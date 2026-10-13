@@ -24,6 +24,7 @@ export async function getCaseType(id: string): Promise<CaseType | null> {
 export type CaseFilters = {
   q?: string;
   typeId?: string;
+  contactId?: string;
   status?: string;
   archived?: boolean;
   sort?: "created_at" | "due_at" | "code";
@@ -59,6 +60,7 @@ export async function listCases(filters: CaseFilters) {
     : query.range(from, from + CASES_PAGE_SIZE - 1);
 
   if (filters.typeId) query = query.eq("case_type_id", filters.typeId);
+  if (filters.contactId) query = query.eq("contact_id", filters.contactId);
   if (filters.status) query = query.eq("status", filters.status);
   if (filters.q) {
     const q = sanitize(filters.q);

@@ -26,5 +26,14 @@
 ### Identidad visual
 - Tema claro con la imagen de AGR (grupoagringenieria.com): azul #003366, barra superior negra, acento #F5C2A1, Work Sans + Roboto.
 
-### Pendiente (entrega B)
+### Fase 1 · Expedientes, Tareas, Agenda, Documentos
+- Migraciones `…0200_cases`, `…0300_tasks`, `…0400_agenda`, `…0500_documents` (con RLS, índices, triggers de historial/auditoría).
+- Expedientes: tipos configurables (estados y campos), código automático `PREFIJO-AAAA-NNNN`, vista tabla y tablero, historial, campos validados en servidor.
+- Tareas: mis tareas / equipo, subtareas, checklist, vencidas resaltadas, integradas en expedientes y contactos.
+- Agenda: vistas día/semana/mes, recursos con color, citas con estados, solapes bloqueados en BBDD.
+- Documentos: subida privada, versionado, vista previa PDF/imagen, descarga con URL firmada, plantillas con variables → HTML.
+- Ficha 360º de contacto: Resumen, Expedientes, Tareas, Agenda, Documentos.
+- Panel con contadores reales.
+
+### Pendiente (entrega B de Contactos)
 - Fusión de duplicados, relaciones entre contactos, CSV, filtros guardados, columnas configurables, compartir contactos desde la UI.
