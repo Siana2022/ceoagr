@@ -12,7 +12,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/contacts", label: "Contactos", ready: true },
   { href: "/cases", label: "Expedientes", ready: true },
   { href: "/tasks", label: "Tareas", ready: true },
-  { href: "/calendar", label: "Agenda", ready: false },
+  { href: "/calendar", label: "Agenda", ready: true },
   { href: "/documents", label: "Documentos", ready: false },
   { href: "/settings", label: "Ajustes", ready: true, staffOnly: true },
 ];

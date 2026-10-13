@@ -38,6 +38,11 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
         </section>
       ) : null}
 
+      <section className="flex max-w-2xl flex-col gap-2">
+        <h2 className="text-lg font-semibold">Agenda</h2>
+        <Link href="/settings/resources" className="text-sm text-brand underline">Gestionar recursos (profesionales, salas, equipos)</Link>
+      </section>
+
       <section className="flex max-w-2xl flex-col gap-3">
         <h2 className="text-lg font-semibold">Contactos: campos obligatorios</h2>
         <p className="text-sm text-zinc-500">El nombre y el tipo son siempre obligatorios. Marca qué otros campos deben rellenarse.</p>
