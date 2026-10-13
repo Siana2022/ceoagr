@@ -4,17 +4,17 @@ export type NavItem = {
   href: string;
   label: string;
   ready: boolean;
-  adminOnly?: boolean;
+  staffOnly?: boolean;
 };
 
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Panel", ready: true },
-  { href: "/contacts", label: "Contactos", ready: false },
+  { href: "/contacts", label: "Contactos", ready: true },
   { href: "/cases", label: "Expedientes", ready: false },
   { href: "/tasks", label: "Tareas", ready: false },
   { href: "/calendar", label: "Agenda", ready: false },
   { href: "/documents", label: "Documentos", ready: false },
-  { href: "/settings", label: "Ajustes", ready: true, adminOnly: true },
+  { href: "/settings", label: "Ajustes", ready: true, staffOnly: true },
 ];
 
 export function isAdminRole(role: AppRole) {
@@ -28,3 +28,11 @@ export const ROLE_LABELS: Record<AppRole, string> = {
   member: "Miembro",
   readonly: "Solo lectura",
 };
+
+export function isStaffRole(role: AppRole) {
+  return role === "owner" || role === "admin" || role === "manager";
+}
+
+export function canWrite(role: AppRole) {
+  return role !== "readonly";
+}

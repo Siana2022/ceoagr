@@ -15,3 +15,13 @@
 - Menú lateral con secciones por rol (Ajustes solo owner/admin); módulos aún no construidos marcados "Pronto".
 - Panel con tarjetas de contadores (miembros reales; el resto se activará con cada módulo).
 - Ajustes · Equipo: listado de miembros con rol y estado.
+
+### Fase 1 · Contactos, entrega A
+- Migración `20261013000100_contacts.sql`: contacts, contact_relations, record_shares, audit_log (trigger), RLS por rol/equipo, RPC de campos obligatorios.
+- Listado con búsqueda, filtros (tipo, etiqueta, archivados), ordenación y paginación en servidor.
+- Alta, edición, archivado/restauración y ficha con pestaña Resumen.
+- Ajustes: campos obligatorios configurables (owner/admin/manager).
+- Tests: esquema Zod (Vitest) y aislamiento entre organizaciones (`RUN_RLS_TESTS=1`, requiere `SUPABASE_SERVICE_ROLE_KEY`).
+
+### Pendiente (entrega B)
+- Fusión de duplicados, relaciones entre contactos, CSV, filtros guardados, columnas configurables, compartir contactos desde la UI.

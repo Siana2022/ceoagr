@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { buttonClass, inputClass } from "../(auth)/form-styles";
+import { buttonClass, inputClass } from "@/components/form-styles";
 import { createOrganization } from "./actions";
 
 async function OnboardingPageContent({

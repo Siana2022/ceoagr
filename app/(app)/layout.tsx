@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { isAdminRole, NAV_ITEMS, ROLE_LABELS, type AppRole } from "@/lib/modules/nav";
+import { isStaffRole, NAV_ITEMS, ROLE_LABELS, type AppRole } from "@/lib/modules/nav";
 import { Sidebar } from "@/components/Sidebar";
 import { logout } from "../(auth)/actions";
 
@@ -23,7 +23,7 @@ async function AppShell({ children }: { children: React.ReactNode }) {
   const org = Array.isArray(membership.organizations)
     ? membership.organizations[0]
     : membership.organizations;
-  const items = NAV_ITEMS.filter((i) => !i.adminOnly || isAdminRole(role));
+  const items = NAV_ITEMS.filter((i) => !i.staffOnly || isStaffRole(role));
 
   return (
     <div className="flex min-h-full flex-1">

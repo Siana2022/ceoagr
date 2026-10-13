@@ -7,3 +7,7 @@
 | 2026-10-13 | La organización activa se obtiene de `memberships` (función `current_org_id()`), no del JWT `app_metadata` | Evita configurar un hook de auth; los cambios de rol/organización se aplican al instante. La RLS es equivalente. |
 | 2026-10-13 | Un usuario pertenece a una sola organización (`memberships.user_id` único) | Decisión de diseño inicial; ampliar a multi-organización exigiría cambiar la migración base. |
 | 2026-10-13 | Next 16 con `cacheComponents`: el acceso a cookies/searchParams va dentro de `<Suspense>` | Requerido por el prerender; el build falla si no. |
+| 2026-10-13 | Visibilidad de contactos: owner/admin/readonly ven todos; manager los suyos y los de su equipo; member los asignados o compartidos (`record_shares`) | Decisión del usuario. Implementado en `can_view_contact` / `can_edit_contact` (RLS). |
+| 2026-10-13 | Campos obligatorios de contacto configurables por owner/admin/manager (nombre y tipo siempre obligatorios) | Decisión del usuario. Se guarda en `organizations.settings.contacts.required_fields` vía RPC `set_contact_required_fields`; se valida en servidor con Zod. |
+| 2026-10-13 | Los contactos no se borran desde la app, solo se archivan | Spec 4.10 (borrado lógico). Solo owner/admin pueden borrar definitivamente en BBDD. |
+| 2026-10-13 | `@types/node` 22 | Requerido por Vitest 5. |

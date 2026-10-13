@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { signup } from "../actions";
-import { buttonClass, inputClass } from "../form-styles";
+import { buttonClass, inputClass } from "@/components/form-styles";
 
 async function SignupPageContent({
   searchParams,

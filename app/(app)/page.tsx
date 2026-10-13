@@ -7,9 +7,14 @@ export default async function HomePage() {
     .from("memberships")
     .select("*", { count: "exact", head: true });
 
+  const { count: contacts, error: contactsError } = await supabase
+    .from("contacts")
+    .select("*", { count: "exact", head: true })
+    .eq("archived", false);
+
   const cards = [
     { label: "Miembros del equipo", value: members ?? 0 },
-    { label: "Contactos", value: null },
+    { label: "Contactos", value: contactsError ? null : (contacts ?? 0) },
     { label: "Expedientes abiertos", value: null },
     { label: "Tareas pendientes", value: null },
   ];
