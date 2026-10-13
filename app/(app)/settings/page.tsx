@@ -31,6 +31,14 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
     <div className="flex flex-col gap-6">
       <h1 className="text-xl font-semibold">Ajustes</h1>
 
+      <nav aria-label="Secciones de ajustes" className="flex flex-wrap gap-2 text-sm">
+        {(role === "owner" || role === "admin") && (
+          <Link href="/settings/case-types" className="rounded-[5px] border border-brand px-3 py-1.5 text-brand hover:bg-brand hover:text-white">Tipos de expediente</Link>
+        )}
+        <Link href="/settings/resources" className="rounded-[5px] border border-brand px-3 py-1.5 text-brand hover:bg-brand hover:text-white">Recursos de agenda</Link>
+        <Link href="/settings/templates" className="rounded-[5px] border border-brand px-3 py-1.5 text-brand hover:bg-brand hover:text-white">Plantillas de documento</Link>
+      </nav>
+
       {role === "owner" || role === "admin" ? (
         <section className="flex max-w-2xl flex-col gap-2">
           <h2 className="text-lg font-semibold">Expedientes</h2>
