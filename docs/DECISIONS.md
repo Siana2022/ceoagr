@@ -16,3 +16,11 @@
 | 2026-10-13 | Documentos: ruta `org/{org_id}/{entidad}/{id}/{uuid}-{archivo}`, bucket privado, descarga vía `/documents/[id]/download` (URL firmada de 60 s emitida solo si RLS deja ver la fila) | Spec 5.5. |
 | 2026-10-13 | Plantillas generan HTML descargable; PDF/DOCX pendientes | Decisión abierta (spec §9): librería de PDF/DOCX. |
 | 2026-10-13 | Horas de las citas en Europe/Madrid, guardadas en UTC | Gestión desde España; helpers con tests incl. cambio de hora. |
+| 2026-10-13 | Usuarios creados solo por owner/admin (Supabase Admin API con `SUPABASE_SERVICE_ROLE_KEY`, solo en servidor); sin registro público | Uso exclusivo de una empresa. Contraseña temporal mostrada una sola vez; el usuario la cambia en Mi perfil. |
+| 2026-10-13 | Quien tiene una tarea asignada en un expediente (o contacto) puede verlo | Para que un miembro pueda trabajar e imputar horas en lo que se le asigna (migración `…0610_visibility_by_assignment`). |
+| 2026-10-13 | Tareas automáticas por fase: plantillas por tipo de expediente y estado, disparadas por trigger, una vez por plantilla y expediente | Entrega 1 del flujo de ingeniería. |
+| 2026-10-13 | Tiempo: costes/tarifas visibles solo para owner/admin; totales de horas por expediente visibles para quien ve el expediente (`case_hours`) | Los costes de personal son sensibles; las horas del proyecto no. |
+| 2026-10-13 | Alertas de desviación configurables (por defecto 80% y 100%), una notificación por umbral y expediente | Notifica al responsable y a los administradores. |
+| 2026-10-13 | Oportunidades con embudo fijo (consulta, estudio, presupuesto enviado, negociación, ganada, perdida); presupuestos con líneas y totales calculados en BBDD; "convertir en proyecto" copia horas y honorarios del presupuesto aceptado | Entrega 3. Presupuesto en HTML imprimible; PDF/DOCX siguen pendientes. |
+| 2026-10-13 | Control horario append-only: sin edición ni borrado (trigger + RLS); la hora la fija el servidor; correcciones = evento manual con motivo obligatorio, solo admin | Cumplimiento del registro de jornada y trazabilidad. |
+| 2026-10-13 | Cuadros de mando solo para owner/admin/manager; gráficos propios (CSS) sin librería | Evitar dependencias; los datos respetan RLS. |

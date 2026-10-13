@@ -35,5 +35,14 @@
 - Ficha 360º de contacto: Resumen, Expedientes, Tareas, Agenda, Documentos.
 - Panel con contadores reales.
 
+### Flujo de trabajo de ingeniería
+1. Tareas automáticas por fase (Ajustes → Tipos de expediente → Tareas por fase).
+2. Control de horas y rentabilidad: temporizador y horas manuales, tarifas por profesional (coste y precio), informes por proyecto/cliente/persona con margen, exportación CSV, alertas de desviación y notificaciones.
+3. Oportunidades y presupuestos: embudo, presupuestos con líneas, estados, documento HTML, conversión a proyecto.
+4. Control horario: fichar entrada/salida/pausa, vista mensual, vista de equipo, correcciones manuales con motivo, CSV de resumen y de registro completo.
+5. Cuadros de mando: proyectos por estado, horas frente a presupuesto, carga por persona, tareas vencidas, embudo, ocupación de agenda, rentabilidad y horas fichadas frente a imputadas.
+- Gestión de usuarios por el administrador; sin registro público.
+- Migraciones: `…0600_task_templates`, `…0610_visibility_by_assignment`, `…0700_time_tracking`, `…0800_opportunities`, `…0900_clock`.
+
 ### Pendiente (entrega B de Contactos)
 - Fusión de duplicados, relaciones entre contactos, CSV, filtros guardados, columnas configurables, compartir contactos desde la UI.

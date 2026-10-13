@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BarChart3,
   Briefcase,
   CalendarDays,
   CheckSquare,
@@ -26,6 +27,7 @@ const ICONS: Record<string, LucideIcon> = {
   documents: FileText,
   time: Timer,
   clock: Clock,
+  dashboards: BarChart3,
   opportunities: TrendingUp,
   settings: Settings,
 };

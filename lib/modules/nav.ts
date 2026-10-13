@@ -18,6 +18,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/time", icon: "time", label: "Mis horas", ready: true },
   { href: "/clock", icon: "clock", label: "Fichaje", ready: true },
   { href: "/documents", icon: "documents", label: "Documentos", ready: true },
+  { href: "/dashboards", icon: "dashboards", label: "Cuadros de mando", ready: true, staffOnly: true },
   { href: "/settings", icon: "settings", label: "Ajustes", ready: true, staffOnly: true },
 ];
 
