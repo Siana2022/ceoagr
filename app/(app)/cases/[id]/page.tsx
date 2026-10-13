@@ -10,6 +10,8 @@ import { canWrite } from "@/lib/modules/nav";
 import { listTasks } from "@/lib/modules/tasks/queries";
 import { DocumentsSection } from "@/components/documents/DocumentsSection";
 import { TaskTable } from "@/components/tasks/TaskTable";
+import { getAlertThresholds, getCaseMinutes, listEntries } from "@/lib/modules/time/queries";
+import { budgetStatus, formatHours, formatMinutes, formatMoney } from "@/lib/modules/time/calc";
 import { StatusBadge } from "@/components/cases/StatusBadge";
 import { inputClass } from "@/components/form-styles";
 
@@ -37,10 +39,13 @@ export default async function CasePage({ params }: PageProps<"/cases/[id]">) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 
-  const [found, role, tasks] = await Promise.all([
+  const [found, role, tasks, minutesMap, thresholds, myEntries] = await Promise.all([
     getCase(id),
     getCurrentRole(),
     listTasks({ caseId: id, state: "all", limit: 50 }),
+    getCaseMinutes([id]),
+    getAlertThresholds(),
+    listEntries({ caseId: id, fromIso: "2000-01-01T00:00:00Z", toIso: "2100-01-01T00:00:00Z", limit: 8 }),
   ]);
   if (!found) notFound();
   const { kase: c, contact, type, events, names } = found;
@@ -53,6 +58,7 @@ export default async function CasePage({ params }: PageProps<"/cases/[id]">) {
     ["Prioridad", PRIORITY_LABELS[c.priority as Priority]],
     ["Fecha límite", fmtDate(c.due_at)],
     ["Horas presupuestadas", c.budget_hours != null ? String(c.budget_hours) : "—"],
+    ["Honorarios", c.fee_amount != null ? formatMoney(Number(c.fee_amount)) : "—"],
     ["Responsable", (c.owner_id && names.get(c.owner_id)) || "—"],
     ["Apertura", fmtDate(c.opened_at)],
     ["Cierre", fmtDate(c.closed_at)],
@@ -116,6 +122,46 @@ export default async function CasePage({ params }: PageProps<"/cases/[id]">) {
         </div>
         <TaskTable rows={tasks.rows} names={tasks.names} back={`/cases/${c.id}`} canWrite={writable} showLinks={false} empty="Este expediente no tiene tareas." />
       </section>
+
+      {(() => {
+        const logged = minutesMap.get(id) ?? 0;
+        const st = budgetStatus(logged, c.budget_hours != null ? Number(c.budget_hours) : null, thresholds[0] ?? 80);
+        const bar = st.level === "over" ? "bg-red-500" : st.level === "warn" ? "bg-amber-500" : "bg-emerald-500";
+        return (
+          <section className="card flex flex-col gap-4 p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="section-title">Tiempo</h2>
+              <Link href="/time" className="link text-sm">Imputar horas</Link>
+            </div>
+            <div>
+              <p className="text-2xl font-bold tracking-tight">
+                {formatHours(logged)} h
+                {c.budget_hours != null && <span className="text-base font-normal text-muted"> de {c.budget_hours} h presupuestadas</span>}
+              </p>
+              {st.pct !== null && (
+                <div className="mt-3 flex items-center gap-3">
+                  <span className="h-2 w-64 max-w-full overflow-hidden rounded-full bg-slate-200">
+                    <span className={`block h-full ${bar}`} style={{ width: `${Math.min(100, st.pct)}%` }} />
+                  </span>
+                  <span className={`text-sm font-medium ${st.level === "over" ? "text-danger" : st.level === "warn" ? "text-amber-600" : "text-muted"}`}>
+                    {Math.round(st.pct)}%{st.level === "over" ? " · presupuesto superado" : st.level === "warn" ? " · en riesgo" : ""}
+                  </span>
+                </div>
+              )}
+            </div>
+            {myEntries.length > 0 && (
+              <ul className="flex flex-col divide-y divide-slate-100 text-sm">
+                {myEntries.map((e) => (
+                  <li key={e.id} className="flex justify-between gap-4 py-2">
+                    <span>{e.description || "Sin descripción"}</span>
+                    <span className="shrink-0 text-muted">{fmtDate(e.started_at)} · {formatMinutes(e.minutes)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        );
+      })()}
 
       <DocumentsSection caseId={c.id} back={`/cases/${c.id}`} canWrite={writable} />
 

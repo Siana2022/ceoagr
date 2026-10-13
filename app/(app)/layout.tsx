@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { LogOut } from "lucide-react";
+import { Bell, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { isStaffRole, NAV_ITEMS, ROLE_LABELS, type AppRole } from "@/lib/modules/nav";
 import { Brand } from "@/components/Brand";
 import { MobileNav } from "@/components/MobileNav";
 import { Sidebar } from "@/components/Sidebar";
+import { countUnreadNotifications } from "@/lib/modules/time/queries";
 import { logout } from "../(auth)/actions";
 
 function initials(name: string) {
@@ -34,6 +35,7 @@ async function AppShell({ children }: { children: React.ReactNode }) {
     .eq("user_id", user.id)
     .maybeSingle();
 
+  const unread = await countUnreadNotifications();
   const role = membership.role as AppRole;
   const org = Array.isArray(membership.organizations)
     ? membership.organizations[0]
@@ -64,6 +66,14 @@ async function AppShell({ children }: { children: React.ReactNode }) {
                 <span className="block truncate text-sm font-medium">{displayName}</span>
                 <span className="block truncate text-xs text-white/55">{ROLE_LABELS[role]}</span>
               </span>
+            </Link>
+            <Link href="/notifications" title="Notificaciones" aria-label={`Notificaciones${unread ? `, ${unread} sin leer` : ""}`} className="relative rounded-lg p-2 text-white/60 hover:bg-white/10 hover:text-white">
+              <Bell size={18} />
+              {unread > 0 && (
+                <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
             </Link>
             <form action={logout}>
               <button

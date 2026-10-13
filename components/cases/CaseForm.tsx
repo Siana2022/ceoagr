@@ -124,6 +124,7 @@ function initialValues(type: CaseType, kase?: CaseRow, presetContact?: string) {
     priority: kase?.priority ?? "normal",
     due_at: toDateInput(kase?.due_at),
     budget_hours: kase?.budget_hours != null ? String(kase.budget_hours) : "",
+    fee_amount: kase?.fee_amount != null ? String(kase.fee_amount) : "",
     owner_id: kase?.owner_id ?? "",
   };
   for (const f of type.custom_schema) {
@@ -171,6 +172,7 @@ export function CaseForm({ action, type, contacts, members, kase, presetContact,
         </label>
         <Field name="due_at" label="Fecha límite" type="date" values={values} errors={errors} />
         <Field name="budget_hours" label="Horas presupuestadas" type="number" step="0.25" values={values} errors={errors} />
+        <Field name="fee_amount" label="Honorarios (€, sin IVA)" type="number" step="0.01" values={values} errors={errors} />
         {members && (
           <label className="field">
             Responsable

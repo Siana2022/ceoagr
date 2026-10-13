@@ -5,6 +5,8 @@ import { isStaffRole, type AppRole } from "@/lib/modules/nav";
 import { CONFIGURABLE_FIELDS, FIELD_LABELS } from "@/lib/modules/contacts/schema";
 import { getRequiredFields } from "@/lib/modules/contacts/queries";
 import { saveRequiredFields } from "@/lib/modules/contacts/actions";
+import { getAlertThresholds } from "@/lib/modules/time/queries";
+import { saveAlertThresholds } from "@/lib/modules/time/actions";
 import { buttonClass } from "@/components/form-styles";
 
 export default async function SettingsPage({ searchParams }: PageProps<"/settings">) {
@@ -14,7 +16,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
   const { data: role } = await supabase.rpc("current_user_role");
   if (!role || !isStaffRole(role as AppRole)) redirect("/");
 
-  const required = await getRequiredFields();
+  const [required, thresholds] = await Promise.all([getRequiredFields(), getAlertThresholds()]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -26,6 +28,9 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
         )}
         {(role === "owner" || role === "admin") && (
           <Link href="/settings/case-types" className="btn btn-secondary btn-sm">Tipos de expediente</Link>
+        )}
+        {(role === "owner" || role === "admin") && (
+          <Link href="/settings/rates" className="btn btn-secondary btn-sm">Tarifas por profesional</Link>
         )}
         <Link href="/settings/resources" className="btn btn-secondary btn-sm">Recursos de agenda</Link>
         <Link href="/settings/templates" className="btn btn-secondary btn-sm">Plantillas de documento</Link>
@@ -53,6 +58,20 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
       <section className="card flex max-w-2xl flex-col gap-2 p-6">
         <h2 className="section-title">Agenda</h2>
         <Link href="/settings/resources" className="link text-sm">Gestionar recursos (profesionales, salas, equipos)</Link>
+      </section>
+
+      <section className="card flex max-w-2xl flex-col gap-3 p-6">
+        <h2 className="section-title">Alertas de desviación de horas</h2>
+        <p className="text-sm text-muted">
+          Se avisa al responsable del expediente y a los administradores cuando un proyecto consume estos porcentajes de sus horas presupuestadas.
+        </p>
+        <form action={saveAlertThresholds} className="flex flex-wrap items-end gap-3">
+          <label className="field">
+            Porcentajes (separados por comas)
+            <input name="thresholds" defaultValue={thresholds.join(", ")} className="input w-56" />
+          </label>
+          <button type="submit" className="btn btn-secondary">Guardar</button>
+        </form>
       </section>
 
       <section className="card flex max-w-2xl flex-col gap-3 p-6">

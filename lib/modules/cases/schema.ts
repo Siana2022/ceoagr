@@ -119,8 +119,14 @@ export const caseSchema = z.object({
     .transform((v) => v ?? null),
   budget_hours: z
     .preprocess(
-      (v) => (emptyToNull(v) === null ? null : Number(v)),
+      (v) => (v === undefined || emptyToNull(v) === null ? null : Number(v)),
       z.number().min(0, "No puede ser negativo").max(100000).nullish(),
+    )
+    .transform((v) => v ?? null),
+  fee_amount: z
+    .preprocess(
+      (v) => (v === undefined || emptyToNull(v) === null ? null : Number(String(v).replace(",", "."))),
+      z.number().min(0, "No puede ser negativo").max(100000000).nullish(),
     )
     .transform((v) => v ?? null),
   owner_id: z
@@ -141,6 +147,7 @@ export function caseFormToInput(fd: FormData) {
     priority: g("priority") || "normal",
     due_at: g("due_at"),
     budget_hours: g("budget_hours"),
+    fee_amount: g("fee_amount"),
     owner_id: g("owner_id"),
   };
 }

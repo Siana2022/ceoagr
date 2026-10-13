@@ -60,6 +60,7 @@ export type CaseRow = {
   closed_at: string | null;
   custom_fields: Record<string, unknown>;
   budget_hours: number | null;
+  fee_amount?: number | null;
   archived: boolean;
   created_at: string;
   updated_at: string;

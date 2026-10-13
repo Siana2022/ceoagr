@@ -9,6 +9,7 @@ import {
   FileText,
   LayoutDashboard,
   Settings,
+  Timer,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -21,6 +22,7 @@ const ICONS: Record<string, LucideIcon> = {
   tasks: CheckSquare,
   calendar: CalendarDays,
   documents: FileText,
+  time: Timer,
   settings: Settings,
 };
 

@@ -138,6 +138,7 @@ function toRow(input: ReturnType<typeof caseSchema.parse>, includeOwner: boolean
     priority: input.priority,
     due_at: input.due_at,
     budget_hours: input.budget_hours,
+    fee_amount: input.fee_amount,
     ...(includeOwner && input.owner_id ? { owner_id: input.owner_id } : {}),
   };
 }
