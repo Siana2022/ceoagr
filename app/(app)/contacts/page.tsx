@@ -48,14 +48,14 @@ export default async function ContactsPage({ searchParams }: PageProps<"/contact
         )}
       </div>
 
-      <form method="get" className="flex flex-wrap items-end gap-3">
+      <form method="get" className="flex flex-wrap items-end gap-3" role="search">
         <label className="flex flex-col gap-1 text-sm">
           Buscar
-          <input name="q" defaultValue={q} placeholder="Nombre, email, NIF, teléfono" className={`${inputClass} w-64`} />
+          <input name="q" type="search" autoComplete="off" data-lpignore="true" data-1p-ignore defaultValue={q} placeholder="Nombre, email, NIF, teléfono" className={`${inputClass} h-10 w-80`} />
         </label>
         <label className="flex flex-col gap-1 text-sm">
           Tipo
-          <select name="kind" defaultValue={kind ?? ""} className={inputClass}>
+          <select name="kind" defaultValue={kind ?? ""} className={`${inputClass} h-10`}>
             <option value="">Todos</option>
             <option value="person">Personas</option>
             <option value="company">Empresas</option>
@@ -63,13 +63,13 @@ export default async function ContactsPage({ searchParams }: PageProps<"/contact
         </label>
         <label className="flex flex-col gap-1 text-sm">
           Etiqueta
-          <input name="tag" defaultValue={tag} className={`${inputClass} w-36`} />
+          <input name="tag" autoComplete="off" defaultValue={tag} className={`${inputClass} h-10 w-40`} />
         </label>
-        <label className="flex items-center gap-2 pb-2 text-sm">
+        <label className="flex h-10 items-center gap-2 text-sm">
           <input type="checkbox" name="archived" value="1" defaultChecked={archived} />
           Ver archivados
         </label>
-        <button type="submit" className="rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700">
+        <button type="submit" className="h-10 rounded-md border border-zinc-300 px-4 text-sm hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800">
           Filtrar
         </button>
       </form>
