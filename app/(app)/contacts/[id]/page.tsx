@@ -7,6 +7,9 @@ import { CONTACT_KIND_LABELS } from "@/lib/modules/contacts/types";
 import { getCurrentRole } from "@/lib/modules/session";
 import { canWrite } from "@/lib/modules/nav";
 import { listCases, listCaseTypes } from "@/lib/modules/cases/queries";
+import { listOpportunities } from "@/lib/modules/opportunities/queries";
+import { stageInfo } from "@/lib/modules/opportunities/calc";
+import { formatMoney } from "@/lib/modules/time/calc";
 import { listTasks } from "@/lib/modules/tasks/queries";
 import { listContactAppointments } from "@/lib/modules/agenda/queries";
 import { APPOINTMENT_STATUS_LABELS } from "@/lib/modules/agenda/types";
@@ -18,6 +21,7 @@ import { DocumentsSection } from "@/components/documents/DocumentsSection";
 
 const TABS = [
   { key: "summary", label: "Resumen" },
+  { key: "opps", label: "Oportunidades" },
   { key: "cases", label: "Expedientes" },
   { key: "tasks", label: "Tareas" },
   { key: "agenda", label: "Agenda" },
@@ -34,11 +38,12 @@ export default async function ContactPage({ params, searchParams }: PageProps<"/
   const [found, role] = await Promise.all([getContact(id), getCurrentRole()]);
   if (!found) notFound();
 
-  const [caseTypes, cases, tasks, appointments] = await Promise.all([
+  const [caseTypes, cases, tasks, appointments, opps] = await Promise.all([
     tab === "cases" ? listCaseTypes(true) : Promise.resolve([]),
     tab === "cases" ? listCases({ contactId: id, archived: false, all: true }) : Promise.resolve(null),
     tab === "tasks" ? listTasks({ contactId: id, state: "all", limit: 50 }) : Promise.resolve(null),
     tab === "agenda" ? listContactAppointments(id) : Promise.resolve([]),
+    tab === "opps" ? listOpportunities({ contactId: id, limit: 50 }) : Promise.resolve(null),
   ]);
   const typeById = new Map(caseTypes.map((t) => [t.id, t]));
   const { contact: c, ownerName } = found;
@@ -114,6 +119,30 @@ export default async function ContactPage({ params, searchParams }: PageProps<"/
           <dt className="text-muted">Etiquetas</dt>
           <dd>{c.tags.length ? c.tags.join(", ") : "—"}</dd>
         </dl>
+      )}
+
+      {tab === "opps" && opps && (
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h2 className="section-title">Oportunidades</h2>
+            {writable && <Link href={`/opportunities/new?contact=${c.id}`} className="link text-sm">Nueva oportunidad</Link>}
+          </div>
+          <div className="table-card">
+            <table>
+              <thead><tr><th>Título</th><th>Fase</th><th>Valor</th></tr></thead>
+              <tbody>
+                {opps.rows.map((o) => (
+                  <tr key={o.id}>
+                    <td><Link href={`/opportunities/${o.id}`} className="link">{o.title}</Link></td>
+                    <td>{stageInfo(o.stage).label}</td>
+                    <td className="tabular-nums">{o.expected_value != null ? formatMoney(o.expected_value) : "—"}</td>
+                  </tr>
+                ))}
+                {opps.rows.length === 0 && <tr><td colSpan={3} className="py-6 text-center text-muted">Este contacto no tiene oportunidades.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
 
       {tab === "cases" && cases && (

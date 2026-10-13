@@ -11,6 +11,7 @@ export type NavItem = {
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", icon: "dashboard", label: "Panel", ready: true },
   { href: "/contacts", icon: "contacts", label: "Contactos", ready: true },
+  { href: "/opportunities", icon: "opportunities", label: "Oportunidades", ready: true },
   { href: "/cases", icon: "cases", label: "Expedientes", ready: true },
   { href: "/tasks", icon: "tasks", label: "Tareas", ready: true },
   { href: "/calendar", icon: "calendar", label: "Agenda", ready: true },

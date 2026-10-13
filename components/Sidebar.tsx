@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   Settings,
   Timer,
+  TrendingUp,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -23,6 +24,7 @@ const ICONS: Record<string, LucideIcon> = {
   calendar: CalendarDays,
   documents: FileText,
   time: Timer,
+  opportunities: TrendingUp,
   settings: Settings,
 };
 
