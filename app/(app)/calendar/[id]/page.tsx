@@ -25,13 +25,13 @@ export default async function AppointmentPage({ params }: PageProps<"/calendar/[
   const writable = role ? canWrite(role) : false;
   const date = madridParts(appt.starts_at).date;
   const backToWeek = `/calendar?date=${date}&view=week`;
-  const quick = "rounded-[5px] border border-brand px-3 py-1.5 text-sm text-brand hover:bg-brand hover:text-white";
+  const quick = "btn btn-secondary btn-sm";
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <Link href={backToWeek} className="text-sm underline">← Agenda</Link>
-        <h1 className="mt-1 text-xl font-semibold">{appt.title}</h1>
+        <Link href={backToWeek} className="link text-sm">← Agenda</Link>
+        <h1 className="page-title mt-1">{appt.title}</h1>
       </div>
 
       {writable && (
@@ -76,7 +76,7 @@ export default async function AppointmentPage({ params }: PageProps<"/calendar/[
 
       {writable && (
         <form action={deleteAppointment.bind(null, id)}>
-          <button type="submit" className="text-sm text-red-600 underline">Eliminar cita</button>
+          <button type="submit" className="link-danger text-sm">Eliminar cita</button>
         </form>
       )}
     </div>

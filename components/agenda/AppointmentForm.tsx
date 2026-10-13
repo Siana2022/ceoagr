@@ -34,7 +34,7 @@ type FieldProps = {
 
 function Field({ name, label, values, errors, type = "text", required }: FieldProps) {
   return (
-    <label className="flex flex-col gap-1 text-sm">
+    <label className="field">
       <span>
         {label}
         {required && <span aria-hidden="true"> *</span>}
@@ -47,7 +47,7 @@ function Field({ name, label, values, errors, type = "text", required }: FieldPr
         aria-invalid={errors[name] ? true : undefined}
         className={inputClass}
       />
-      {errors[name] && <span className="text-xs text-red-600">{errors[name]}</span>}
+      {errors[name] && <span className="field-error">{errors[name]}</span>}
     </label>
   );
 }
@@ -81,9 +81,9 @@ export function AppointmentForm({
   const errors = state?.fieldErrors ?? {};
 
   return (
-    <form action={formAction} className="flex max-w-2xl flex-col gap-4">
+    <form action={formAction} className="card flex max-w-2xl flex-col gap-4 p-6">
       {state?.error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="alert-error">
           {state.error}
         </p>
       )}
@@ -92,14 +92,14 @@ export function AppointmentForm({
       <Field name="title" label="Título" values={values} errors={errors} required />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Recurso *
           <select name="resource_id" required defaultValue={values.resource_id} className={inputClass}>
             {resources.map((r) => (<option key={r.id} value={r.id}>{r.name}</option>))}
           </select>
-          {errors.resource_id && <span className="text-xs text-red-600">{errors.resource_id}</span>}
+          {errors.resource_id && <span className="field-error">{errors.resource_id}</span>}
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Estado
           <select name="status" defaultValue={values.status} className={inputClass}>
             {Object.entries(APPOINTMENT_STATUS_LABELS).map(([k, l]) => (<option key={k} value={k}>{l}</option>))}
@@ -110,14 +110,14 @@ export function AppointmentForm({
           <Field name="start" label="Inicio" type="time" values={values} errors={errors} required />
           <Field name="end" label="Fin" type="time" values={values} errors={errors} required />
         </div>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Contacto
           <select name="contact_id" defaultValue={values.contact_id} className={inputClass}>
             <option value="">—</option>
             {contacts.map((c) => (<option key={c.id} value={c.id}>{c.name}</option>))}
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Expediente
           <select name="case_id" defaultValue={values.case_id} className={inputClass}>
             <option value="">—</option>
@@ -126,7 +126,7 @@ export function AppointmentForm({
         </label>
       </div>
 
-      <label className="flex flex-col gap-1 text-sm">
+      <label className="field">
         Notas
         <textarea name="notes" rows={3} defaultValue={values.notes ?? ""} className={inputClass} />
       </label>
@@ -137,7 +137,7 @@ export function AppointmentForm({
             {pending ? "Guardando…" : submitLabel}
           </button>
         </div>
-        <Link href={cancelHref} className="text-sm underline">Cancelar</Link>
+        <Link href={cancelHref} className="link text-sm">Cancelar</Link>
       </div>
     </form>
   );

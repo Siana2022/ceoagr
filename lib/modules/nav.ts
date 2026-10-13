@@ -3,18 +3,19 @@ export type AppRole = "owner" | "admin" | "manager" | "member" | "readonly";
 export type NavItem = {
   href: string;
   label: string;
+  icon: string;
   ready: boolean;
   staffOnly?: boolean;
 };
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "Panel", ready: true },
-  { href: "/contacts", label: "Contactos", ready: true },
-  { href: "/cases", label: "Expedientes", ready: true },
-  { href: "/tasks", label: "Tareas", ready: true },
-  { href: "/calendar", label: "Agenda", ready: true },
-  { href: "/documents", label: "Documentos", ready: true },
-  { href: "/settings", label: "Ajustes", ready: true, staffOnly: true },
+  { href: "/", icon: "dashboard", label: "Panel", ready: true },
+  { href: "/contacts", icon: "contacts", label: "Contactos", ready: true },
+  { href: "/cases", icon: "cases", label: "Expedientes", ready: true },
+  { href: "/tasks", icon: "tasks", label: "Tareas", ready: true },
+  { href: "/calendar", icon: "calendar", label: "Agenda", ready: true },
+  { href: "/documents", icon: "documents", label: "Documentos", ready: true },
+  { href: "/settings", icon: "settings", label: "Ajustes", ready: true, staffOnly: true },
 ];
 
 export function isAdminRole(role: AppRole) {

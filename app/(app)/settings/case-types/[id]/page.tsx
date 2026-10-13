@@ -17,7 +17,7 @@ export default async function EditCaseTypePage({ params }: PageProps<"/settings/
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Editar tipo: {type.name}</h1>
+      <h1 className="page-title">Editar tipo: {type.name}</h1>
       <CaseTypeForm action={updateCaseType.bind(null, id)} type={type} submitLabel="Guardar cambios" />
     </div>
   );

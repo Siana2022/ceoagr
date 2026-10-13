@@ -12,7 +12,7 @@ export default async function NewContactPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Nuevo contacto</h1>
+      <h1 className="page-title">Nuevo contacto</h1>
       <ContactForm action={createContact} required={required} cancelHref="/contacts" submitLabel="Crear contacto" />
     </div>
   );

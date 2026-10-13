@@ -65,53 +65,53 @@ export default async function ContactPage({ params, searchParams }: PageProps<"/
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <Link href="/contacts" className="text-sm underline">← Contactos</Link>
-          <h1 className="mt-1 text-xl font-semibold">
+          <Link href="/contacts" className="link text-sm">← Contactos</Link>
+          <h1 className="page-title mt-1">
             {c.name}
-            {c.archived && <span className="ml-2 text-sm font-normal text-zinc-500">(archivado)</span>}
+            {c.archived && <span className="ml-2 text-sm font-normal text-muted">(archivado)</span>}
           </h1>
         </div>
         {writable && (
           <div className="flex items-center gap-3 text-sm">
-            <Link href={`/contacts/${c.id}/edit`} className="underline">Editar</Link>
+            <Link href={`/contacts/${c.id}/edit`} className="link">Editar</Link>
             {c.archived ? (
               <form action={restoreContact.bind(null, c.id)}>
-                <button type="submit" className="underline">Restaurar</button>
+                <button type="submit" className="link">Restaurar</button>
               </form>
             ) : (
               <form action={archiveContact.bind(null, c.id)}>
-                <button type="submit" className="underline">Archivar</button>
+                <button type="submit" className="link">Archivar</button>
               </form>
             )}
           </div>
         )}
       </div>
 
-      <nav aria-label="Secciones del contacto" className="flex flex-wrap gap-2 border-b border-zinc-200 text-sm">
+      <nav aria-label="Secciones del contacto" className="tabs">
         {TABS.map((t) => (
           <Link
             key={t.key}
             href={t.key === "summary" ? `/contacts/${c.id}` : `/contacts/${c.id}?tab=${t.key}`}
             aria-current={tab === t.key ? "page" : undefined}
-            className={tab === t.key ? "border-b-2 border-brand px-3 py-2 font-medium text-brand" : "px-3 py-2 hover:underline"}
+            className="tab"
           >
             {t.label}
           </Link>
         ))}
         {FUTURE_TABS.map((t) => (
-          <span key={t} aria-disabled="true" className="px-3 py-2 text-zinc-400">{t}</span>
+          <span key={t} aria-disabled="true" className="tab cursor-not-allowed opacity-50">{t}</span>
         ))}
       </nav>
 
       {tab === "summary" && (
-        <dl className="grid max-w-2xl grid-cols-[10rem_1fr] gap-x-4 gap-y-2 text-sm">
+        <dl className="dl-grid card max-w-2xl p-6">
           {rows.map(([k, v]) => (
             <div key={k} className="contents">
-              <dt className="text-zinc-500">{k}</dt>
+              <dt className="text-muted">{k}</dt>
               <dd>{v || "—"}</dd>
             </div>
           ))}
-          <dt className="text-zinc-500">Etiquetas</dt>
+          <dt className="text-muted">Etiquetas</dt>
           <dd>{c.tags.length ? c.tags.join(", ") : "—"}</dd>
         </dl>
       )}
@@ -119,42 +119,42 @@ export default async function ContactPage({ params, searchParams }: PageProps<"/
       {tab === "cases" && cases && (
         <section className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Expedientes</h2>
-            {writable && <Link href={`/cases/new?contact=${c.id}`} className="text-sm text-brand underline">Nuevo expediente</Link>}
+            <h2 className="section-title">Expedientes</h2>
+            {writable && <Link href={`/cases/new?contact=${c.id}`} className="link text-sm">Nuevo expediente</Link>}
           </div>
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-zinc-200">
+          <div className="table-card"><table>
+            <thead>
               <tr>
-                <th className="py-2 pr-4 font-medium">Código</th>
-                <th className="py-2 pr-4 font-medium">Título</th>
-                <th className="py-2 pr-4 font-medium">Estado</th>
-                <th className="py-2 pr-4 font-medium">Prioridad</th>
-                <th className="py-2 font-medium">Vence</th>
+                <th>Código</th>
+                <th>Título</th>
+                <th>Estado</th>
+                <th>Prioridad</th>
+                <th>Vence</th>
               </tr>
             </thead>
             <tbody>
               {cases.rows.map((k) => (
-                <tr key={k.id} className="border-b border-zinc-100">
-                  <td className="py-2 pr-4"><Link href={`/cases/${k.id}`} className="font-medium text-brand underline">{k.code}</Link></td>
-                  <td className="py-2 pr-4">{k.title}</td>
-                  <td className="py-2 pr-4">
+                <tr key={k.id}>
+                  <td><Link href={`/cases/${k.id}`} className="link">{k.code}</Link></td>
+                  <td>{k.title}</td>
+                  <td>
                     <StatusBadge status={typeById.get(k.case_type_id)?.pipeline.find((p) => p.key === k.status)} fallback={k.status} />
                   </td>
-                  <td className="py-2 pr-4">{PRIORITY_LABELS[k.priority as Priority]}</td>
-                  <td className="py-2">{fmtDate(k.due_at)}</td>
+                  <td>{PRIORITY_LABELS[k.priority as Priority]}</td>
+                  <td>{fmtDate(k.due_at)}</td>
                 </tr>
               ))}
-              {cases.rows.length === 0 && <tr><td colSpan={5} className="py-6 text-center text-zinc-500">Este contacto no tiene expedientes.</td></tr>}
+              {cases.rows.length === 0 && <tr><td colSpan={5} className="py-6 text-center text-muted">Este contacto no tiene expedientes.</td></tr>}
             </tbody>
-          </table>
+          </table></div>
         </section>
       )}
 
       {tab === "tasks" && tasks && (
         <section className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Tareas</h2>
-            {writable && <Link href={`/tasks/new?contact=${c.id}`} className="text-sm text-brand underline">Nueva tarea</Link>}
+            <h2 className="section-title">Tareas</h2>
+            {writable && <Link href={`/tasks/new?contact=${c.id}`} className="link text-sm">Nueva tarea</Link>}
           </div>
           <TaskTable rows={tasks.rows} names={tasks.names} back={`/contacts/${c.id}?tab=tasks`} canWrite={writable} showLinks={false} empty="Este contacto no tiene tareas." />
         </section>
@@ -163,19 +163,19 @@ export default async function ContactPage({ params, searchParams }: PageProps<"/
       {tab === "agenda" && (
         <section className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Citas</h2>
-            {writable && <Link href={`/calendar/new?contact=${c.id}`} className="text-sm text-brand underline">Nueva cita</Link>}
+            <h2 className="section-title">Citas</h2>
+            {writable && <Link href={`/calendar/new?contact=${c.id}`} className="link text-sm">Nueva cita</Link>}
           </div>
           <ul className="flex flex-col gap-2 text-sm">
             {appointments.map((a) => (
               <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-100 pb-2">
-                <Link href={`/calendar/${a.id}`} className="font-medium text-brand underline">{a.title}</Link>
-                <span className="text-zinc-500">
+                <Link href={`/calendar/${a.id}`} className="link">{a.title}</Link>
+                <span className="text-muted">
                   {fmtDateTime(a.starts_at)} · {a.resources?.name} · {APPOINTMENT_STATUS_LABELS[a.status]}
                 </span>
               </li>
             ))}
-            {appointments.length === 0 && <li className="text-zinc-500">Este contacto no tiene citas.</li>}
+            {appointments.length === 0 && <li className="text-muted">Este contacto no tiene citas.</li>}
           </ul>
         </section>
       )}

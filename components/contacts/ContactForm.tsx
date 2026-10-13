@@ -25,7 +25,7 @@ type FieldProps = {
 
 function Field({ name, label, values, errors, type = "text", isRequired = false }: FieldProps) {
   return (
-    <label className="flex flex-col gap-1 text-sm">
+    <label className="field">
       <span>
         {label}
         {isRequired && <span aria-hidden="true"> *</span>}
@@ -38,7 +38,7 @@ function Field({ name, label, values, errors, type = "text", isRequired = false 
         aria-invalid={errors[name] ? true : undefined}
         className={inputClass}
       />
-      {errors[name] && <span className="text-xs text-red-600">{errors[name]}</span>}
+      {errors[name] && <span className="field-error">{errors[name]}</span>}
     </label>
   );
 }
@@ -71,20 +71,20 @@ export function ContactForm({ action, required, contact, cancelHref, submitLabel
   const req = (f: ConfigurableField) => required.includes(f);
 
   return (
-    <form action={formAction} className="flex max-w-2xl flex-col gap-4">
+    <form action={formAction} className="card flex max-w-2xl flex-col gap-4 p-6">
       {state?.error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="alert-error">
           {state.error}
         </p>
       )}
 
-      <label className="flex flex-col gap-1 text-sm">
+      <label className="field">
         Tipo *
         <select name="kind" defaultValue={values.kind ?? "person"} className={inputClass}>
           <option value="person">Persona</option>
           <option value="company">Empresa</option>
         </select>
-        {errors.kind && <span className="text-xs text-red-600">{errors.kind}</span>}
+        {errors.kind && <span className="field-error">{errors.kind}</span>}
       </label>
 
       <Field values={values} errors={errors} name="name" label="Nombre" isRequired />
@@ -117,7 +117,7 @@ export function ContactForm({ action, required, contact, cancelHref, submitLabel
             {pending ? "Guardando…" : submitLabel}
           </button>
         </div>
-        <Link href={cancelHref} className="text-sm underline">
+        <Link href={cancelHref} className="link text-sm">
           Cancelar
         </Link>
       </div>

@@ -18,7 +18,7 @@ export default async function EditTemplatePage({ params }: PageProps<"/settings/
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Editar plantilla: {template.name}</h1>
+      <h1 className="page-title">Editar plantilla: {template.name}</h1>
       <TemplateForm action={updateTemplate.bind(null, id)} caseTypes={types} template={template} submitLabel="Guardar cambios" />
     </div>
   );

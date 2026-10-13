@@ -13,7 +13,7 @@ export default async function EditContactPage({ params }: PageProps<"/contacts/[
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Editar contacto</h1>
+      <h1 className="page-title">Editar contacto</h1>
       <ContactForm
         action={updateContact.bind(null, id)}
         required={required}

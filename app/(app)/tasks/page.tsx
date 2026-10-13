@@ -27,32 +27,31 @@ export default async function TasksPage({ searchParams }: PageProps<"/tasks">) {
     return `/tasks?${p.toString()}`;
   };
   const pages = Math.max(1, Math.ceil(total / TASKS_PAGE_SIZE));
-  const tab = "rounded-[5px] px-3 py-1.5 text-sm";
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">Tareas</h1>
+        <h1 className="page-title">Tareas</h1>
         <div className="flex items-center gap-3">
-          <div className="flex rounded-[5px] border border-zinc-300 p-0.5">
-            <Link href={params({ scope: "mine", page: "1" })} className={`${tab} ${scope === "mine" ? "bg-brand text-white" : ""}`}>Mis tareas</Link>
-            <Link href={params({ scope: "team", page: "1" })} className={`${tab} ${scope === "team" ? "bg-brand text-white" : ""}`}>Equipo</Link>
+          <div className="segmented">
+            <Link href={params({ scope: "mine", page: "1" })} aria-current={scope === "mine" ? "true" : undefined}>Mis tareas</Link>
+            <Link href={params({ scope: "team", page: "1" })} aria-current={scope === "team" ? "true" : undefined}>Equipo</Link>
           </div>
           {role && canWrite(role) && (
-            <Link href="/tasks/new" className="rounded-[5px] bg-brand px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white hover:bg-brand-dark">
+            <Link href="/tasks/new" className="btn btn-primary">
               Nueva tarea
             </Link>
           )}
         </div>
       </div>
 
-      <form method="get" role="search" className="flex flex-wrap items-end gap-3">
+      <form method="get" role="search" className="card toolbar">
         <input type="hidden" name="scope" value={scope} />
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Buscar
           <input name="q" type="search" autoComplete="off" data-lpignore="true" data-1p-ignore defaultValue={q} placeholder="Título" className={`${inputClass} h-10 w-64`} />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Mostrar
           <select name="state" defaultValue={state} className={`${inputClass} h-10`}>
             <option value="open">Abiertas</option>
@@ -60,10 +59,10 @@ export default async function TasksPage({ searchParams }: PageProps<"/tasks">) {
             <option value="all">Todas</option>
           </select>
         </label>
-        <button type="submit" className="h-10 rounded-[5px] border border-brand px-4 text-sm font-medium text-brand hover:bg-brand hover:text-white">Filtrar</button>
+        <button type="submit" className="btn btn-secondary">Filtrar</button>
       </form>
 
-      {error && <p role="alert" className="text-sm text-red-600">No se pudieron cargar las tareas.</p>}
+      {error && <p role="alert" className="alert-error">No se pudieron cargar las tareas.</p>}
 
       <TaskTable
         rows={rows}
@@ -76,9 +75,9 @@ export default async function TasksPage({ searchParams }: PageProps<"/tasks">) {
       <div className="flex items-center justify-between text-sm">
         <span>{total} tarea{total === 1 ? "" : "s"}</span>
         <div className="flex items-center gap-3">
-          {current > 1 ? <Link href={params({ page: String(current - 1) })} className="underline">Anterior</Link> : <span className="text-zinc-400">Anterior</span>}
+          {current > 1 ? <Link href={params({ page: String(current - 1) })} className="link">Anterior</Link> : <span className="text-slate-400">Anterior</span>}
           <span>Página {current} de {pages}</span>
-          {current < pages ? <Link href={params({ page: String(current + 1) })} className="underline">Siguiente</Link> : <span className="text-zinc-400">Siguiente</span>}
+          {current < pages ? <Link href={params({ page: String(current + 1) })} className="link">Siguiente</Link> : <span className="text-slate-400">Siguiente</span>}
         </div>
       </div>
     </div>

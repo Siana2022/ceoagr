@@ -10,7 +10,7 @@ export default async function NewCaseTypePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Nuevo tipo de expediente</h1>
+      <h1 className="page-title">Nuevo tipo de expediente</h1>
       <CaseTypeForm action={createCaseType} submitLabel="Crear tipo" />
     </div>
   );

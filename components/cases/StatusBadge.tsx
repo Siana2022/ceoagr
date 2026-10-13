@@ -4,7 +4,7 @@ export function StatusBadge({ status, fallback }: { status?: PipelineStatus; fal
   const color = status?.color ?? "#64748b";
   return (
     <span
-      className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+      className="inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold"
       style={{ backgroundColor: `${color}1a`, color }}
     >
       {status?.label ?? fallback ?? "—"}

@@ -40,20 +40,20 @@ export default async function ContactsPage({ searchParams }: PageProps<"/contact
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{archived ? "Contactos archivados" : "Contactos"}</h1>
+        <h1 className="page-title">{archived ? "Contactos archivados" : "Contactos"}</h1>
         {role && canWrite(role) && (
-          <Link href="/contacts/new" className="rounded-[5px] bg-brand px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white hover:bg-brand-dark">
+          <Link href="/contacts/new" className="btn btn-primary">
             Nuevo contacto
           </Link>
         )}
       </div>
 
       <form method="get" className="flex flex-wrap items-end gap-3" role="search">
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Buscar
           <input name="q" type="search" autoComplete="off" data-lpignore="true" data-1p-ignore defaultValue={q} placeholder="Nombre, email, NIF, teléfono" className={`${inputClass} h-10 w-80`} />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Tipo
           <select name="kind" defaultValue={kind ?? ""} className={`${inputClass} h-10`}>
             <option value="">Todos</option>
@@ -61,7 +61,7 @@ export default async function ContactsPage({ searchParams }: PageProps<"/contact
             <option value="company">Empresas</option>
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Etiqueta
           <input name="tag" autoComplete="off" defaultValue={tag} className={`${inputClass} h-10 w-40`} />
         </label>
@@ -69,47 +69,47 @@ export default async function ContactsPage({ searchParams }: PageProps<"/contact
           <input type="checkbox" name="archived" value="1" defaultChecked={archived} />
           Ver archivados
         </label>
-        <button type="submit" className="h-10 rounded-[5px] border border-brand px-4 text-sm font-medium text-brand hover:bg-brand hover:text-white">
+        <button type="submit" className="btn btn-secondary">
           Filtrar
         </button>
       </form>
 
-      {error && <p role="alert" className="text-sm text-red-600">No se pudieron cargar los contactos.</p>}
+      {error && <p role="alert" className="alert-error">No se pudieron cargar los contactos.</p>}
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-zinc-200">
+      <div className="table-card">
+        <table>
+          <thead>
             <tr>
-              <th className="py-2 pr-4 font-medium">
+              <th>
                 <Link href={sortHref("name")}>Nombre{sort === "name" ? (dir === "asc" ? " ↑" : " ↓") : ""}</Link>
               </th>
-              <th className="py-2 pr-4 font-medium">Tipo</th>
-              <th className="py-2 pr-4 font-medium">Email</th>
-              <th className="py-2 pr-4 font-medium">Teléfono</th>
-              <th className="py-2 pr-4 font-medium">Etiquetas</th>
-              <th className="py-2 pr-4 font-medium">Responsable</th>
-              <th className="py-2 font-medium">
+              <th>Tipo</th>
+              <th>Email</th>
+              <th>Teléfono</th>
+              <th>Etiquetas</th>
+              <th>Responsable</th>
+              <th>
                 <Link href={sortHref("created_at")}>Alta{sort === "created_at" ? (dir === "asc" ? " ↑" : " ↓") : ""}</Link>
               </th>
             </tr>
           </thead>
           <tbody>
             {rows.map((c) => (
-              <tr key={c.id} className="border-b border-zinc-100">
-                <td className="py-2 pr-4">
-                  <Link href={`/contacts/${c.id}`} className="font-medium text-brand underline">{c.name}</Link>
+              <tr key={c.id}>
+                <td>
+                  <Link href={`/contacts/${c.id}`} className="link">{c.name}</Link>
                 </td>
-                <td className="py-2 pr-4">{CONTACT_KIND_LABELS[c.kind as ContactKind]}</td>
-                <td className="py-2 pr-4">{c.email ?? "—"}</td>
-                <td className="py-2 pr-4">{c.phone ?? "—"}</td>
-                <td className="py-2 pr-4">{c.tags.join(", ") || "—"}</td>
-                <td className="py-2 pr-4">{(c.owner_id && owners.get(c.owner_id)) || "—"}</td>
-                <td className="py-2">{new Date(c.created_at).toLocaleDateString("es-ES")}</td>
+                <td>{CONTACT_KIND_LABELS[c.kind as ContactKind]}</td>
+                <td>{c.email ?? "—"}</td>
+                <td>{c.phone ?? "—"}</td>
+                <td>{c.tags.join(", ") || "—"}</td>
+                <td>{(c.owner_id && owners.get(c.owner_id)) || "—"}</td>
+                <td>{new Date(c.created_at).toLocaleDateString("es-ES")}</td>
               </tr>
             ))}
             {rows.length === 0 && !error && (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-zinc-500">
+                <td colSpan={7} className="py-8 text-center text-muted">
                   {q || kind || tag ? "Ningún contacto coincide con los filtros." : archived ? "No hay contactos archivados." : "Aún no hay contactos. Crea el primero con «Nuevo contacto»."}
                 </td>
               </tr>
@@ -121,9 +121,9 @@ export default async function ContactsPage({ searchParams }: PageProps<"/contact
       <div className="flex items-center justify-between text-sm">
         <span>{total} contacto{total === 1 ? "" : "s"}</span>
         <div className="flex items-center gap-3">
-          {current > 1 ? <Link href={href({ page: String(current - 1) })} className="underline">Anterior</Link> : <span className="text-zinc-400">Anterior</span>}
+          {current > 1 ? <Link href={href({ page: String(current - 1) })} className="link">Anterior</Link> : <span className="text-slate-400">Anterior</span>}
           <span>Página {current} de {pages}</span>
-          {current < pages ? <Link href={href({ page: String(current + 1) })} className="underline">Siguiente</Link> : <span className="text-zinc-400">Siguiente</span>}
+          {current < pages ? <Link href={href({ page: String(current + 1) })} className="link">Siguiente</Link> : <span className="text-slate-400">Siguiente</span>}
         </div>
       </div>
     </div>

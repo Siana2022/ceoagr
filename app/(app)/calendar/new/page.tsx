@@ -26,9 +26,9 @@ export default async function NewAppointmentPage({ searchParams }: PageProps<"/c
   if (resources.length === 0) {
     return (
       <div className="flex flex-col gap-3">
-        <h1 className="text-xl font-semibold">Nueva cita</h1>
+        <h1 className="page-title">Nueva cita</h1>
         <p className="text-sm">
-          Primero hay que crear un recurso en <Link href="/settings/resources" className="underline">Ajustes → Recursos</Link>.
+          Primero hay que crear un recurso en <Link href="/settings/resources" className="link">Ajustes → Recursos</Link>.
         </p>
       </div>
     );
@@ -38,7 +38,7 @@ export default async function NewAppointmentPage({ searchParams }: PageProps<"/c
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Nueva cita</h1>
+      <h1 className="page-title">Nueva cita</h1>
       <AppointmentForm
         action={createAppointment}
         resources={resources}

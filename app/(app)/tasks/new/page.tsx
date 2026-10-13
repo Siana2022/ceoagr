@@ -28,7 +28,7 @@ export default async function NewTaskPage({ searchParams }: PageProps<"/tasks/ne
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Nueva tarea</h1>
+      <h1 className="page-title">Nueva tarea</h1>
       <TaskForm
         action={createTask}
         members={members}

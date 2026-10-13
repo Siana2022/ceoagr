@@ -31,7 +31,7 @@ type FieldProps = {
 
 function Field({ name, label, values, errors, type = "text", required }: FieldProps) {
   return (
-    <label className="flex flex-col gap-1 text-sm">
+    <label className="field">
       <span>
         {label}
         {required && <span aria-hidden="true"> *</span>}
@@ -44,7 +44,7 @@ function Field({ name, label, values, errors, type = "text", required }: FieldPr
         aria-invalid={errors[name] ? true : undefined}
         className={inputClass}
       />
-      {errors[name] && <span className="text-xs text-red-600">{errors[name]}</span>}
+      {errors[name] && <span className="field-error">{errors[name]}</span>}
     </label>
   );
 }
@@ -67,9 +67,9 @@ export function TaskForm({ action, members, cases, contacts, task, preset, back,
   const errors = state?.fieldErrors ?? {};
 
   return (
-    <form action={formAction} className="flex max-w-2xl flex-col gap-4">
+    <form action={formAction} className="card flex max-w-2xl flex-col gap-4 p-6">
       {state?.error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="alert-error">
           {state.error}
         </p>
       )}
@@ -78,26 +78,26 @@ export function TaskForm({ action, members, cases, contacts, task, preset, back,
 
       <Field name="title" label="Título" values={values} errors={errors} required />
 
-      <label className="flex flex-col gap-1 text-sm">
+      <label className="field">
         Descripción
         <textarea name="description" rows={3} defaultValue={values.description ?? ""} className={inputClass} />
-        {errors.description && <span className="text-xs text-red-600">{errors.description}</span>}
+        {errors.description && <span className="field-error">{errors.description}</span>}
       </label>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Estado
           <select name="status" defaultValue={values.status} className={inputClass}>
             {Object.entries(TASK_STATUS_LABELS).map(([k, l]) => (<option key={k} value={k}>{l}</option>))}
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Prioridad
           <select name="priority" defaultValue={values.priority} className={inputClass}>
             {Object.entries(PRIORITY_LABELS).map(([k, l]) => (<option key={k} value={k}>{l}</option>))}
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Asignada a
           <select name="assignee_id" defaultValue={values.assignee_id} className={inputClass}>
             <option value="">Sin asignar</option>
@@ -107,14 +107,14 @@ export function TaskForm({ action, members, cases, contacts, task, preset, back,
         <Field name="estimate_minutes" label="Estimación (minutos)" type="number" values={values} errors={errors} />
         <Field name="start_at" label="Inicio" type="date" values={values} errors={errors} />
         <Field name="due_at" label="Vencimiento" type="date" values={values} errors={errors} />
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Expediente
           <select name="case_id" defaultValue={values.case_id} className={inputClass}>
             <option value="">—</option>
             {cases.map((c) => (<option key={c.id} value={c.id}>{c.code} · {c.title}</option>))}
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Contacto
           <select name="contact_id" defaultValue={values.contact_id} className={inputClass}>
             <option value="">—</option>
@@ -129,7 +129,7 @@ export function TaskForm({ action, members, cases, contacts, task, preset, back,
             {pending ? "Guardando…" : submitLabel}
           </button>
         </div>
-        <Link href={cancelHref} className="text-sm underline">Cancelar</Link>
+        <Link href={cancelHref} className="link text-sm">Cancelar</Link>
       </div>
     </form>
   );

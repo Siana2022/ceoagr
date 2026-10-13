@@ -13,43 +13,43 @@ export default async function CaseTypesPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <Link href="/settings" className="text-sm underline">← Ajustes</Link>
+        <Link href="/settings" className="link text-sm">← Ajustes</Link>
         <div className="mt-1 flex items-center justify-between">
-          <h1 className="text-xl font-semibold">Tipos de expediente</h1>
-          <Link href="/settings/case-types/new" className="rounded-[5px] bg-brand px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white hover:bg-brand-dark">
+          <h1 className="page-title">Tipos de expediente</h1>
+          <Link href="/settings/case-types/new" className="btn btn-primary">
             Nuevo tipo
           </Link>
         </div>
       </div>
 
-      <table className="w-full max-w-3xl text-left text-sm">
-        <thead className="border-b border-zinc-200">
+      <div className="table-card max-w-3xl"><table>
+        <thead>
           <tr>
-            <th className="py-2 font-medium">Nombre</th>
-            <th className="py-2 font-medium">Prefijo</th>
-            <th className="py-2 font-medium">Estados</th>
-            <th className="py-2 font-medium">Campos</th>
-            <th className="py-2" />
+            <th>Nombre</th>
+            <th>Prefijo</th>
+            <th>Estados</th>
+            <th>Campos</th>
+            <th />
           </tr>
         </thead>
         <tbody>
           {types.map((t) => (
-            <tr key={t.id} className="border-b border-zinc-100">
-              <td className="py-2">
-                <Link href={`/settings/case-types/${t.id}`} className="font-medium text-brand underline">{t.name}</Link>
-                {t.archived && <span className="ml-2 text-xs text-zinc-500">(archivado)</span>}
+            <tr key={t.id}>
+              <td>
+                <Link href={`/settings/case-types/${t.id}`} className="link">{t.name}</Link>
+                {t.archived && <span className="ml-2 text-xs text-muted">(archivado)</span>}
               </td>
-              <td className="py-2">{t.code_prefix}</td>
-              <td className="py-2">{t.pipeline.length}</td>
-              <td className="py-2">{t.custom_schema.length}</td>
-              <td className="py-2 text-right">
+              <td>{t.code_prefix}</td>
+              <td>{t.pipeline.length}</td>
+              <td>{t.custom_schema.length}</td>
+              <td className="text-right">
                 {t.archived ? (
                   <form action={restoreCaseType.bind(null, t.id)}>
-                    <button type="submit" className="underline">Restaurar</button>
+                    <button type="submit" className="link">Restaurar</button>
                   </form>
                 ) : (
                   <form action={archiveCaseType.bind(null, t.id)}>
-                    <button type="submit" className="underline">Archivar</button>
+                    <button type="submit" className="link">Archivar</button>
                   </form>
                 )}
               </td>
@@ -57,13 +57,13 @@ export default async function CaseTypesPage() {
           ))}
           {types.length === 0 && (
             <tr>
-              <td colSpan={5} className="py-8 text-center text-zinc-500">
+              <td colSpan={5} className="py-8 text-center text-muted">
                 Aún no hay tipos. Crea el primero para poder abrir expedientes.
               </td>
             </tr>
           )}
         </tbody>
-      </table>
+      </table></div>
     </div>
   );
 }

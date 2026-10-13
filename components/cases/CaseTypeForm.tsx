@@ -24,7 +24,7 @@ const DEFAULT_PIPELINE: PipelineStatus[] = [
   { key: "cerrado", label: "Cerrado", color: "#15803d", final: true },
 ];
 
-const smallBtn = "rounded-[5px] border border-zinc-300 px-2 py-1 text-xs hover:bg-zinc-100";
+const smallBtn = "btn btn-secondary btn-sm";
 
 function move<T>(list: T[], i: number, d: -1 | 1): T[] {
   const j = i + d;
@@ -48,7 +48,7 @@ export function CaseTypeForm({ action, type, submitLabel }: Props) {
     setPipeline((s) => s.map((x, k) => (k === i ? { ...x, ...p } : x)));
 
   const text = (name: string, label: string, def: string) => (
-    <label className="flex flex-col gap-1 text-sm">
+    <label className="field">
       {label} *
       <input
         name={name}
@@ -57,14 +57,14 @@ export function CaseTypeForm({ action, type, submitLabel }: Props) {
         aria-invalid={errors[name] ? true : undefined}
         className={inputClass}
       />
-      {errors[name] && <span className="text-xs text-red-600">{errors[name]}</span>}
+      {errors[name] && <span className="field-error">{errors[name]}</span>}
     </label>
   );
 
   return (
-    <form action={formAction} className="flex max-w-3xl flex-col gap-8">
+    <form action={formAction} className="card flex max-w-3xl flex-col gap-8 p-6">
       {state?.error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="alert-error">
           {state.error}
         </p>
       )}
@@ -77,8 +77,8 @@ export function CaseTypeForm({ action, type, submitLabel }: Props) {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">Estados</h2>
-        <p className="text-sm text-zinc-500">
+        <h2 className="section-title">Estados</h2>
+        <p className="text-sm text-muted">
           El orden es el del flujo. Marca cuál es el inicial y cuáles cierran el expediente.
         </p>
         {pipeline.map((s, i) => (
@@ -94,7 +94,7 @@ export function CaseTypeForm({ action, type, submitLabel }: Props) {
               aria-label="Color"
               value={s.color}
               onChange={(e) => patchStatus(i, { color: e.target.value })}
-              className="h-9 w-12 rounded border border-zinc-300"
+              className="h-10 w-12 cursor-pointer rounded-lg border border-slate-300 bg-white p-1"
             />
             <label className="flex items-center gap-1 text-sm">
               <input
@@ -139,8 +139,8 @@ export function CaseTypeForm({ action, type, submitLabel }: Props) {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">Campos personalizados</h2>
-        <p className="text-sm text-zinc-500">Datos extra que se piden al crear cada expediente de este tipo.</p>
+        <h2 className="section-title">Campos personalizados</h2>
+        <p className="text-sm text-muted">Datos extra que se piden al crear cada expediente de este tipo.</p>
         {fields.map((f, i) => (
           <div key={i} className="flex flex-wrap items-center gap-2">
             <input
@@ -205,7 +205,7 @@ export function CaseTypeForm({ action, type, submitLabel }: Props) {
             {pending ? "Guardando…" : submitLabel}
           </button>
         </div>
-        <Link href="/settings/case-types" className="text-sm underline">Cancelar</Link>
+        <Link href="/settings/case-types" className="link text-sm">Cancelar</Link>
       </div>
     </form>
   );

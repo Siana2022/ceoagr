@@ -12,7 +12,7 @@ export default async function NewTemplatePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Nueva plantilla</h1>
+      <h1 className="page-title">Nueva plantilla</h1>
       <TemplateForm action={createTemplate} caseTypes={types} submitLabel="Crear plantilla" />
     </div>
   );

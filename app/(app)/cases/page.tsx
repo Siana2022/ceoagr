@@ -43,32 +43,31 @@ export default async function CasesPage({ searchParams }: PageProps<"/cases">) {
   const sortHref = (col: string) => href({ sort: col, dir: sort === col && dir === "asc" ? "desc" : "asc", page: "1" });
   const pages = Math.max(1, Math.ceil(total / CASES_PAGE_SIZE));
   const activeTypes = types.filter((t) => !t.archived);
-  const tab = "rounded-[5px] px-3 py-1.5 text-sm";
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">{archived ? "Expedientes archivados" : "Expedientes"}</h1>
+        <h1 className="page-title">{archived ? "Expedientes archivados" : "Expedientes"}</h1>
         <div className="flex items-center gap-3">
-          <div className="flex rounded-[5px] border border-zinc-300 p-0.5">
-            <Link href={href({ view: undefined, page: "1" })} className={`${tab} ${!board ? "bg-brand text-white" : ""}`}>Tabla</Link>
-            <Link href={href({ view: "board", page: "1" })} className={`${tab} ${board ? "bg-brand text-white" : ""}`}>Tablero</Link>
+          <div className="segmented">
+            <Link href={href({ view: undefined, page: "1" })} aria-current={!board ? "true" : undefined}>Tabla</Link>
+            <Link href={href({ view: "board", page: "1" })} aria-current={board ? "true" : undefined}>Tablero</Link>
           </div>
           {role && canWrite(role) && (
-            <Link href={`/cases/new${typeId ? `?type=${typeId}` : ""}`} className="rounded-[5px] bg-brand px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white hover:bg-brand-dark">
+            <Link href={`/cases/new${typeId ? `?type=${typeId}` : ""}`} className="btn btn-primary">
               Nuevo expediente
             </Link>
           )}
         </div>
       </div>
 
-      <form method="get" role="search" className="flex flex-wrap items-end gap-3">
+      <form method="get" role="search" className="card toolbar">
         {board && <input type="hidden" name="view" value="board" />}
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Buscar
           <input name="q" type="search" autoComplete="off" data-lpignore="true" data-1p-ignore defaultValue={q} placeholder="Título o código" className={`${inputClass} h-10 w-64`} />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Tipo
           <select name="type" defaultValue={typeId ?? ""} className={`${inputClass} h-10`}>
             {!board && <option value="">Todos</option>}
@@ -76,7 +75,7 @@ export default async function CasesPage({ searchParams }: PageProps<"/cases">) {
           </select>
         </label>
         {!board && selectedType && (
-          <label className="flex flex-col gap-1 text-sm">
+          <label className="field">
             Estado
             <select name="status" defaultValue={status} className={`${inputClass} h-10`}>
               <option value="">Todos</option>
@@ -88,15 +87,15 @@ export default async function CasesPage({ searchParams }: PageProps<"/cases">) {
           <input type="checkbox" name="archived" value="1" defaultChecked={archived} />
           Ver archivados
         </label>
-        <button type="submit" className="h-10 rounded-[5px] border border-brand px-4 text-sm font-medium text-brand hover:bg-brand hover:text-white">Filtrar</button>
+        <button type="submit" className="btn btn-secondary">Filtrar</button>
       </form>
 
-      {error && <p role="alert" className="text-sm text-red-600">No se pudieron cargar los expedientes.</p>}
+      {error && <p role="alert" className="alert-error">No se pudieron cargar los expedientes.</p>}
 
       {activeTypes.length === 0 && (
-        <p className="rounded-[5px] border border-zinc-200 p-4 text-sm">
+        <p className="card p-5 text-sm">
           Aún no hay tipos de expediente. Un administrador debe crearlos en{" "}
-          <Link href="/settings/case-types" className="underline">Ajustes → Tipos de expediente</Link>.
+          <Link href="/settings/case-types" className="link">Ajustes → Tipos de expediente</Link>.
         </p>
       )}
 
@@ -105,30 +104,30 @@ export default async function CasesPage({ searchParams }: PageProps<"/cases">) {
           {selectedType.pipeline.map((s) => {
             const col = rows.filter((r) => r.status === s.key);
             return (
-              <section key={s.key} className="w-72 shrink-0 rounded-[5px] bg-zinc-50 p-3">
+              <section key={s.key} className="w-72 shrink-0 rounded-xl bg-slate-100 p-3">
                 <h2 className="mb-3 flex items-center justify-between text-sm font-semibold">
                   <StatusBadge status={s} />
-                  <span className="text-zinc-500">{col.length}</span>
+                  <span className="text-muted">{col.length}</span>
                 </h2>
                 <ul className="flex flex-col gap-2">
                   {col.map((c) => (
-                    <li key={c.id} className="rounded-[5px] border border-zinc-200 bg-white p-3 text-sm">
-                      <Link href={`/cases/${c.id}`} className="font-medium text-brand underline">{c.code}</Link>
+                    <li key={c.id} className="card p-3 text-sm">
+                      <Link href={`/cases/${c.id}`} className="link">{c.code}</Link>
                       <p className="mt-1">{c.title}</p>
-                      <p className="text-xs text-zinc-500">{c.contacts?.name}</p>
-                      {c.due_at && <p className="text-xs text-zinc-500">Vence {fmtDate(c.due_at)}</p>}
+                      <p className="text-xs text-muted">{c.contacts?.name}</p>
+                      {c.due_at && <p className="text-xs text-muted">Vence {fmtDate(c.due_at)}</p>}
                       {role && canWrite(role) && (
                         <form action={changeCaseStatus.bind(null, c.id)} className="mt-2 flex gap-1">
                           <input type="hidden" name="back" value="board" />
-                          <select name="status" defaultValue={c.status} aria-label="Cambiar estado" className="min-w-0 flex-1 rounded border border-zinc-300 px-1 py-1 text-xs">
+                          <select name="status" defaultValue={c.status} aria-label="Cambiar estado" className="input min-w-0 flex-1 text-xs">
                             {selectedType.pipeline.map((o) => (<option key={o.key} value={o.key}>{o.label}</option>))}
                           </select>
-                          <button type="submit" className="rounded border border-brand px-2 text-xs text-brand">Mover</button>
+                          <button type="submit" className="btn btn-secondary btn-sm">Mover</button>
                         </form>
                       )}
                     </li>
                   ))}
-                  {col.length === 0 && <li className="text-xs text-zinc-400">Sin expedientes</li>}
+                  {col.length === 0 && <li className="text-xs text-slate-400">Sin expedientes</li>}
                 </ul>
               </section>
             );
@@ -136,36 +135,36 @@ export default async function CasesPage({ searchParams }: PageProps<"/cases">) {
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-zinc-200">
+          <div className="table-card">
+            <table>
+              <thead>
                 <tr>
-                  <th className="py-2 pr-4 font-medium"><Link href={sortHref("code")}>Código{sort === "code" ? (dir === "asc" ? " ↑" : " ↓") : ""}</Link></th>
-                  <th className="py-2 pr-4 font-medium">Título</th>
-                  <th className="py-2 pr-4 font-medium">Contacto</th>
-                  <th className="py-2 pr-4 font-medium">Estado</th>
-                  <th className="py-2 pr-4 font-medium">Prioridad</th>
-                  <th className="py-2 pr-4 font-medium"><Link href={sortHref("due_at")}>Vence{sort === "due_at" ? (dir === "asc" ? " ↑" : " ↓") : ""}</Link></th>
-                  <th className="py-2 font-medium">Responsable</th>
+                  <th><Link href={sortHref("code")}>Código{sort === "code" ? (dir === "asc" ? " ↑" : " ↓") : ""}</Link></th>
+                  <th>Título</th>
+                  <th>Contacto</th>
+                  <th>Estado</th>
+                  <th>Prioridad</th>
+                  <th><Link href={sortHref("due_at")}>Vence{sort === "due_at" ? (dir === "asc" ? " ↑" : " ↓") : ""}</Link></th>
+                  <th>Responsable</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((c) => {
                   const st = typeById.get(c.case_type_id)?.pipeline.find((s) => s.key === c.status);
                   return (
-                    <tr key={c.id} className="border-b border-zinc-100">
-                      <td className="py-2 pr-4"><Link href={`/cases/${c.id}`} className="font-medium text-brand underline">{c.code}</Link></td>
-                      <td className="py-2 pr-4">{c.title}</td>
-                      <td className="py-2 pr-4">{c.contacts?.name ?? "—"}</td>
-                      <td className="py-2 pr-4"><StatusBadge status={st} fallback={c.status} /></td>
-                      <td className="py-2 pr-4">{PRIORITY_LABELS[c.priority as Priority]}</td>
-                      <td className="py-2 pr-4">{fmtDate(c.due_at)}</td>
-                      <td className="py-2">{(c.owner_id && owners.get(c.owner_id)) || "—"}</td>
+                    <tr key={c.id}>
+                      <td><Link href={`/cases/${c.id}`} className="link">{c.code}</Link></td>
+                      <td>{c.title}</td>
+                      <td>{c.contacts?.name ?? "—"}</td>
+                      <td><StatusBadge status={st} fallback={c.status} /></td>
+                      <td>{PRIORITY_LABELS[c.priority as Priority]}</td>
+                      <td>{fmtDate(c.due_at)}</td>
+                      <td>{(c.owner_id && owners.get(c.owner_id)) || "—"}</td>
                     </tr>
                   );
                 })}
                 {rows.length === 0 && !error && (
-                  <tr><td colSpan={7} className="py-8 text-center text-zinc-500">{q || typeId || status ? "Ningún expediente coincide con los filtros." : "Aún no hay expedientes."}</td></tr>
+                  <tr><td colSpan={7} className="py-8 text-center text-muted">{q || typeId || status ? "Ningún expediente coincide con los filtros." : "Aún no hay expedientes."}</td></tr>
                 )}
               </tbody>
             </table>
@@ -173,9 +172,9 @@ export default async function CasesPage({ searchParams }: PageProps<"/cases">) {
           <div className="flex items-center justify-between text-sm">
             <span>{total} expediente{total === 1 ? "" : "s"}</span>
             <div className="flex items-center gap-3">
-              {current > 1 ? <Link href={href({ page: String(current - 1) })} className="underline">Anterior</Link> : <span className="text-zinc-400">Anterior</span>}
+              {current > 1 ? <Link href={href({ page: String(current - 1) })} className="link">Anterior</Link> : <span className="text-slate-400">Anterior</span>}
               <span>Página {current} de {pages}</span>
-              {current < pages ? <Link href={href({ page: String(current + 1) })} className="underline">Siguiente</Link> : <span className="text-zinc-400">Siguiente</span>}
+              {current < pages ? <Link href={href({ page: String(current + 1) })} className="link">Siguiente</Link> : <span className="text-slate-400">Siguiente</span>}
             </div>
           </div>
         </>

@@ -22,10 +22,10 @@ export default async function NewCasePage({ searchParams }: PageProps<"/cases/ne
   if (types.length === 0) {
     return (
       <div className="flex flex-col gap-3">
-        <h1 className="text-xl font-semibold">Nuevo expediente</h1>
+        <h1 className="page-title">Nuevo expediente</h1>
         <p className="text-sm">
           Aún no hay tipos de expediente. Un administrador debe crearlos en{" "}
-          <Link href="/settings/case-types" className="underline">Ajustes → Tipos de expediente</Link>.
+          <Link href="/settings/case-types" className="link">Ajustes → Tipos de expediente</Link>.
         </p>
       </div>
     );
@@ -35,14 +35,14 @@ export default async function NewCasePage({ searchParams }: PageProps<"/cases/ne
   if (!type) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="text-xl font-semibold">Nuevo expediente</h1>
+        <h1 className="page-title">Nuevo expediente</h1>
         <p className="text-sm">¿De qué tipo?</p>
         <ul className="flex flex-col gap-2">
           {types.map((t) => (
             <li key={t.id}>
               <Link
                 href={`/cases/new?type=${t.id}${presetContact ? `&contact=${presetContact}` : ""}`}
-                className="inline-block rounded-[5px] border border-brand px-4 py-2 text-sm font-medium text-brand hover:bg-brand hover:text-white"
+                className="btn btn-secondary"
               >
                 {t.name}
               </Link>
@@ -60,7 +60,7 @@ export default async function NewCasePage({ searchParams }: PageProps<"/cases/ne
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Nuevo: {type.label_singular}</h1>
+      <h1 className="page-title">Nuevo: {type.label_singular}</h1>
       <CaseForm
         action={createCase}
         type={type}

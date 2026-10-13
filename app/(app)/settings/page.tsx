@@ -29,38 +29,38 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Ajustes</h1>
+      <h1 className="page-title">Ajustes</h1>
 
       <nav aria-label="Secciones de ajustes" className="flex flex-wrap gap-2 text-sm">
         {(role === "owner" || role === "admin") && (
-          <Link href="/settings/case-types" className="rounded-[5px] border border-brand px-3 py-1.5 text-brand hover:bg-brand hover:text-white">Tipos de expediente</Link>
+          <Link href="/settings/case-types" className="btn btn-secondary btn-sm">Tipos de expediente</Link>
         )}
-        <Link href="/settings/resources" className="rounded-[5px] border border-brand px-3 py-1.5 text-brand hover:bg-brand hover:text-white">Recursos de agenda</Link>
-        <Link href="/settings/templates" className="rounded-[5px] border border-brand px-3 py-1.5 text-brand hover:bg-brand hover:text-white">Plantillas de documento</Link>
+        <Link href="/settings/resources" className="btn btn-secondary btn-sm">Recursos de agenda</Link>
+        <Link href="/settings/templates" className="btn btn-secondary btn-sm">Plantillas de documento</Link>
       </nav>
 
       {role === "owner" || role === "admin" ? (
-        <section className="flex max-w-2xl flex-col gap-2">
-          <h2 className="text-lg font-semibold">Expedientes</h2>
-          <Link href="/settings/case-types" className="text-sm text-brand underline">Configurar tipos de expediente (estados y campos)</Link>
+        <section className="card flex max-w-2xl flex-col gap-2 p-6">
+          <h2 className="section-title">Expedientes</h2>
+          <Link href="/settings/case-types" className="link text-sm">Configurar tipos de expediente (estados y campos)</Link>
         </section>
       ) : null}
 
-      <section className="flex max-w-2xl flex-col gap-2">
-        <h2 className="text-lg font-semibold">Documentos</h2>
-        <Link href="/settings/templates" className="text-sm text-brand underline">Gestionar plantillas de documento</Link>
+      <section className="card flex max-w-2xl flex-col gap-2 p-6">
+        <h2 className="section-title">Documentos</h2>
+        <Link href="/settings/templates" className="link text-sm">Gestionar plantillas de documento</Link>
       </section>
 
-      <section className="flex max-w-2xl flex-col gap-2">
-        <h2 className="text-lg font-semibold">Agenda</h2>
-        <Link href="/settings/resources" className="text-sm text-brand underline">Gestionar recursos (profesionales, salas, equipos)</Link>
+      <section className="card flex max-w-2xl flex-col gap-2 p-6">
+        <h2 className="section-title">Agenda</h2>
+        <Link href="/settings/resources" className="link text-sm">Gestionar recursos (profesionales, salas, equipos)</Link>
       </section>
 
-      <section className="flex max-w-2xl flex-col gap-3">
-        <h2 className="text-lg font-semibold">Contactos: campos obligatorios</h2>
-        <p className="text-sm text-zinc-500">El nombre y el tipo son siempre obligatorios. Marca qué otros campos deben rellenarse.</p>
-        {sp.saved && <p role="status" className="text-sm text-green-700">Cambios guardados.</p>}
-        {sp.error && <p role="alert" className="text-sm text-red-600">No se pudieron guardar los cambios.</p>}
+      <section className="card flex max-w-2xl flex-col gap-3 p-6">
+        <h2 className="section-title">Contactos: campos obligatorios</h2>
+        <p className="text-sm text-muted">El nombre y el tipo son siempre obligatorios. Marca qué otros campos deben rellenarse.</p>
+        {sp.saved && <p role="status" className="alert-ok">Cambios guardados.</p>}
+        {sp.error && <p role="alert" className="alert-error">No se pudieron guardar los cambios.</p>}
         <form action={saveRequiredFields} className="flex flex-col gap-2">
           {CONFIGURABLE_FIELDS.map((f) => (
             <label key={f} className="flex items-center gap-2 text-sm">
@@ -74,25 +74,25 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
         </form>
       </section>
 
-      <h2 className="text-lg font-semibold">Equipo</h2>
-      <table className="w-full max-w-2xl text-left text-sm">
-        <thead className="border-b border-zinc-200">
+      <h2 className="section-title">Equipo</h2>
+      <div className="table-card max-w-3xl"><table>
+        <thead>
           <tr>
-            <th className="py-2 font-medium">Nombre</th>
-            <th className="py-2 font-medium">Rol</th>
-            <th className="py-2 font-medium">Estado</th>
+            <th>Nombre</th>
+            <th>Rol</th>
+            <th>Estado</th>
           </tr>
         </thead>
         <tbody>
           {(members ?? []).map((m) => (
-            <tr key={m.user_id} className="border-b border-zinc-100">
-              <td className="py-2">{names.get(m.user_id) || "Sin nombre"}</td>
-              <td className="py-2">{ROLE_LABELS[m.role as AppRole]}</td>
-              <td className="py-2">{m.active ? "Activo" : "Inactivo"}</td>
+            <tr key={m.user_id}>
+              <td>{names.get(m.user_id) || "Sin nombre"}</td>
+              <td>{ROLE_LABELS[m.role as AppRole]}</td>
+              <td>{m.active ? "Activo" : "Inactivo"}</td>
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
     </div>
   );
 }

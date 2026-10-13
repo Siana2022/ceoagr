@@ -17,7 +17,7 @@ export default async function EditCasePage({ params }: PageProps<"/cases/[id]/ed
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Editar {found.kase.code}</h1>
+      <h1 className="page-title">Editar {found.kase.code}</h1>
       <CaseForm
         action={updateCase.bind(null, id)}
         type={found.type}

@@ -67,26 +67,25 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
     for (const [k, v] of Object.entries(merged)) if (v) p.set(k, v);
     return `/calendar?${p.toString()}`;
   };
-  const tab = "rounded-[5px] px-3 py-1.5 text-sm";
-  const nav = "rounded-[5px] border border-zinc-300 px-3 py-1.5 text-sm hover:bg-zinc-100";
+  const nav = "btn btn-secondary btn-sm";
   const newHref = `/calendar/new?date=${date}${resourceId ? `&resource=${resourceId}` : ""}`;
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">Agenda</h1>
+        <h1 className="page-title">Agenda</h1>
         {role && canWrite(role) && resources.length > 0 && (
-          <Link href={newHref} className="rounded-[5px] bg-brand px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white hover:bg-brand-dark">
+          <Link href={newHref} className="btn btn-primary">
             Nueva cita
           </Link>
         )}
       </div>
 
       {resources.length === 0 ? (
-        <p className="rounded-[5px] border border-zinc-200 p-4 text-sm">
+        <p className="card p-5 text-sm">
           Aún no hay recursos (profesionales, salas o equipos).{" "}
           {role && isStaffRole(role) ? (
-            <Link href="/settings/resources" className="underline">Crea el primero en Ajustes → Recursos</Link>
+            <Link href="/settings/resources" className="link">Crea el primero en Ajustes → Recursos</Link>
           ) : (
             "Un responsable debe crearlos en Ajustes."
           )}
@@ -108,11 +107,11 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
                   <option value="">Todos los recursos</option>
                   {resources.map((r) => (<option key={r.id} value={r.id}>{r.name}</option>))}
                 </select>
-                <button type="submit" className="h-9 rounded-[5px] border border-brand px-3 text-sm text-brand hover:bg-brand hover:text-white">Filtrar</button>
+                <button type="submit" className="btn btn-secondary btn-sm">Filtrar</button>
               </form>
-              <div className="flex rounded-[5px] border border-zinc-300 p-0.5">
+              <div className="segmented">
                 {(["day", "week", "month"] as const).map((v) => (
-                  <Link key={v} href={href({ view: v })} className={`${tab} ${view === v ? "bg-brand text-white" : ""}`}>
+                  <Link key={v} href={href({ view: v })} aria-current={view === v ? "true" : undefined}>
                     {v === "day" ? "Día" : v === "week" ? "Semana" : "Mes"}
                   </Link>
                 ))}
@@ -129,7 +128,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
             ))}
           </ul>
 
-          {error && <p role="alert" className="text-sm text-red-600">No se pudo cargar la agenda.</p>}
+          {error && <p role="alert" className="alert-error">No se pudo cargar la agenda.</p>}
 
           {view === "month" ? (
             <MonthGrid gridStart={from} month={monthKey} appts={rows} today={today} />

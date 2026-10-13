@@ -21,12 +21,12 @@ export function UploadForm({ action, caseId, contactId, back, withTags = true, l
       {caseId && <input type="hidden" name="case_id" value={caseId} />}
       {contactId && <input type="hidden" name="contact_id" value={contactId} />}
       {back && <input type="hidden" name="back" value={back} />}
-      <label className="flex flex-col gap-1 text-sm">
+      <label className="field">
         Archivo (máx. 20 MB)
         <input name="file" type="file" required className="text-sm" />
       </label>
       {withTags && (
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Etiquetas
           <input name="tags" placeholder="contrato, plano" className={`${inputClass} h-10 w-48`} />
         </label>
@@ -34,12 +34,12 @@ export function UploadForm({ action, caseId, contactId, back, withTags = true, l
       <button
         type="submit"
         disabled={pending}
-        className="h-10 rounded-[5px] border border-brand px-4 text-sm font-medium text-brand hover:bg-brand hover:text-white disabled:opacity-60"
+        className="btn btn-secondary"
       >
         {pending ? "Subiendo…" : label}
       </button>
       {state?.error && (
-        <p role="alert" className="w-full text-sm text-red-600">
+        <p role="alert" className="alert-error w-full">
           {state.error}
         </p>
       )}

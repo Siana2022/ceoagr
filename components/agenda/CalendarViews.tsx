@@ -41,7 +41,7 @@ export function TimeGrid({ days, appts, today }: { days: string[]; appts: Appoin
   const height = hours.length * PX_PER_HOUR;
 
   return (
-    <div className="overflow-x-auto">
+    <div className="table-card">
       <div className="min-w-[640px]">
         <div className="grid" style={{ gridTemplateColumns: `3.5rem repeat(${days.length}, minmax(0, 1fr))` }}>
           <div />
@@ -57,7 +57,7 @@ export function TimeGrid({ days, appts, today }: { days: string[]; appts: Appoin
         <div className="grid border-t border-zinc-200" style={{ gridTemplateColumns: `3.5rem repeat(${days.length}, minmax(0, 1fr))` }}>
           <div className="relative" style={{ height }}>
             {hours.map((h, i) => (
-              <span key={h} className="absolute right-2 -translate-y-1/2 text-xs text-zinc-500" style={{ top: i * PX_PER_HOUR }}>
+              <span key={h} className="absolute right-2 -translate-y-1/2 text-xs text-muted" style={{ top: i * PX_PER_HOUR }}>
                 {String(h).padStart(2, "0")}:00
               </span>
             ))}
@@ -91,7 +91,7 @@ export function TimeGrid({ days, appts, today }: { days: string[]; appts: Appoin
                     title={`${a.title} · ${a.resources?.name ?? ""}`}
                   >
                     <span className="font-medium">{madridParts(a.starts_at).time}</span> {a.title}
-                    {a.contacts?.name && <span className="block truncate text-zinc-600">{a.contacts.name}</span>}
+                    {a.contacts?.name && <span className="block truncate text-slate-600">{a.contacts.name}</span>}
                   </Link>
                 );
               })}
@@ -122,7 +122,7 @@ export function MonthGrid({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="table-card">
       <div className="min-w-[640px]">
         <div className="grid grid-cols-7 border-b border-zinc-200 text-center text-sm font-medium">
           {DAY_NAMES.map((n) => (<div key={n} className="py-2">{n}</div>))}
@@ -132,7 +132,7 @@ export function MonthGrid({
             const list = byDay.get(d) ?? [];
             const inMonth = d.startsWith(month);
             return (
-              <div key={d} className={`min-h-24 border-b border-l border-zinc-200 p-1 text-xs ${inMonth ? "" : "bg-zinc-50 text-zinc-400"}`}>
+              <div key={d} className={`min-h-24 border-b border-l border-zinc-200 p-1 text-xs ${inMonth ? "" : "bg-zinc-50 text-slate-400"}`}>
                 <Link
                   href={`/calendar?view=day&date=${d}`}
                   className={`inline-block rounded px-1 font-medium ${d === today ? "bg-brand text-white" : ""}`}
@@ -153,7 +153,7 @@ export function MonthGrid({
                   ))}
                   {list.length > 3 && (
                     <li>
-                      <Link href={`/calendar?view=day&date=${d}`} className="underline">+{list.length - 3} más</Link>
+                      <Link href={`/calendar?view=day&date=${d}`} className="link">+{list.length - 3} más</Link>
                     </li>
                   )}
                 </ul>

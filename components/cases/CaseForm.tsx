@@ -36,7 +36,7 @@ type FieldProps = {
 
 function Field({ name, label, values, errors, type = "text", required, step }: FieldProps) {
   return (
-    <label className="flex flex-col gap-1 text-sm">
+    <label className="field">
       <span>
         {label}
         {required && <span aria-hidden="true"> *</span>}
@@ -50,7 +50,7 @@ function Field({ name, label, values, errors, type = "text", required, step }: F
         aria-invalid={errors[name] ? true : undefined}
         className={inputClass}
       />
-      {errors[name] && <span className="text-xs text-red-600">{errors[name]}</span>}
+      {errors[name] && <span className="field-error">{errors[name]}</span>}
     </label>
   );
 }
@@ -65,7 +65,7 @@ function CustomField({
   errors: Record<string, string>;
 }) {
   const name = `cf_${field.key}`;
-  const err = errors[name] && <span className="text-xs text-red-600">{errors[name]}</span>;
+  const err = errors[name] && <span className="field-error">{errors[name]}</span>;
 
   if (field.type === "boolean") {
     return (
@@ -77,7 +77,7 @@ function CustomField({
   }
   if (field.type === "select") {
     return (
-      <label className="flex flex-col gap-1 text-sm">
+      <label className="field">
         <span>
           {field.label}
           {field.required && <span aria-hidden="true"> *</span>}
@@ -94,7 +94,7 @@ function CustomField({
   }
   if (field.type === "textarea") {
     return (
-      <label className="flex flex-col gap-1 text-sm sm:col-span-2">
+      <label className="field sm:col-span-2">
         <span>
           {field.label}
           {field.required && <span aria-hidden="true"> *</span>}
@@ -139,15 +139,15 @@ export function CaseForm({ action, type, contacts, members, kase, presetContact,
   const errors = state?.fieldErrors ?? {};
 
   return (
-    <form action={formAction} className="flex max-w-2xl flex-col gap-4">
+    <form action={formAction} className="card flex max-w-2xl flex-col gap-4 p-6">
       {state?.error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="alert-error">
           {state.error}
         </p>
       )}
       <input type="hidden" name="case_type_id" value={type.id} />
 
-      <label className="flex flex-col gap-1 text-sm">
+      <label className="field">
         Contacto *
         <select name="contact_id" required defaultValue={values.contact_id ?? ""} className={inputClass}>
           <option value="">Selecciona un contacto…</option>
@@ -155,13 +155,13 @@ export function CaseForm({ action, type, contacts, members, kase, presetContact,
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
-        {errors.contact_id && <span className="text-xs text-red-600">{errors.contact_id}</span>}
+        {errors.contact_id && <span className="field-error">{errors.contact_id}</span>}
       </label>
 
       <Field name="title" label="Título" values={values} errors={errors} required />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Prioridad
           <select name="priority" defaultValue={values.priority ?? "normal"} className={inputClass}>
             {Object.entries(PRIORITY_LABELS).map(([k, l]) => (
@@ -172,7 +172,7 @@ export function CaseForm({ action, type, contacts, members, kase, presetContact,
         <Field name="due_at" label="Fecha límite" type="date" values={values} errors={errors} />
         <Field name="budget_hours" label="Horas presupuestadas" type="number" step="0.25" values={values} errors={errors} />
         {members && (
-          <label className="flex flex-col gap-1 text-sm">
+          <label className="field">
             Responsable
             <select name="owner_id" defaultValue={values.owner_id ?? ""} className={inputClass}>
               <option value="">Yo (por defecto)</option>
@@ -199,7 +199,7 @@ export function CaseForm({ action, type, contacts, members, kase, presetContact,
             {pending ? "Guardando…" : submitLabel}
           </button>
         </div>
-        <Link href={cancelHref} className="text-sm underline">Cancelar</Link>
+        <Link href={cancelHref} className="link text-sm">Cancelar</Link>
       </div>
     </form>
   );

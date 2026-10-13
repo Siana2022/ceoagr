@@ -14,31 +14,31 @@ export default async function TemplatesPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <Link href="/settings" className="text-sm underline">← Ajustes</Link>
+        <Link href="/settings" className="link text-sm">← Ajustes</Link>
         <div className="mt-1 flex items-center justify-between">
-          <h1 className="text-xl font-semibold">Plantillas de documento</h1>
-          <Link href="/settings/templates/new" className="rounded-[5px] bg-brand px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white hover:bg-brand-dark">
+          <h1 className="page-title">Plantillas de documento</h1>
+          <Link href="/settings/templates/new" className="btn btn-primary">
             Nueva plantilla
           </Link>
         </div>
       </div>
-      <table className="w-full max-w-2xl text-left text-sm">
-        <thead className="border-b border-zinc-200">
-          <tr><th className="py-2 font-medium">Nombre</th><th className="py-2 font-medium">Creada</th><th className="py-2" /></tr>
+      <div className="table-card max-w-3xl"><table>
+        <thead>
+          <tr><th>Nombre</th><th>Creada</th><th /></tr>
         </thead>
         <tbody>
           {templates.map((t) => (
-            <tr key={t.id} className="border-b border-zinc-100">
-              <td className="py-2"><Link href={`/settings/templates/${t.id}`} className="font-medium text-brand underline">{t.name}</Link></td>
-              <td className="py-2">{fmtDate(t.created_at)}</td>
-              <td className="py-2 text-right">
-                <form action={deleteTemplate.bind(null, t.id)}><button type="submit" className="text-red-600 underline">Eliminar</button></form>
+            <tr key={t.id}>
+              <td><Link href={`/settings/templates/${t.id}`} className="link">{t.name}</Link></td>
+              <td>{fmtDate(t.created_at)}</td>
+              <td className="text-right">
+                <form action={deleteTemplate.bind(null, t.id)}><button type="submit" className="link-danger">Eliminar</button></form>
               </td>
             </tr>
           ))}
-          {templates.length === 0 && <tr><td colSpan={3} className="py-8 text-center text-zinc-500">Aún no hay plantillas.</td></tr>}
+          {templates.length === 0 && <tr><td colSpan={3} className="py-8 text-center text-muted">Aún no hay plantillas.</td></tr>}
         </tbody>
-      </table>
+      </table></div>
     </div>
   );
 }

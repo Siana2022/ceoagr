@@ -18,20 +18,20 @@ export async function DocumentsSection({ caseId, contactId, back, canWrite }: Pr
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">Documentos</h2>
-      {error && <p role="alert" className="text-sm text-red-600">No se pudieron cargar los documentos.</p>}
+      <h2 className="section-title">Documentos</h2>
+      {error && <p role="alert" className="alert-error">No se pudieron cargar los documentos.</p>}
       <ul className="flex flex-col gap-2 text-sm">
         {rows.map((d) => (
           <li key={d.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-100 pb-2">
-            <Link href={`/documents/${d.id}`} className="font-medium text-brand underline">
+            <Link href={`/documents/${d.id}`} className="link">
               {d.name}
             </Link>
-            <span className="text-zinc-500">
+            <span className="text-muted">
               v{d.version} · {formatBytes(d.size_bytes)} · {fmtDate(d.created_at)}
             </span>
           </li>
         ))}
-        {rows.length === 0 && <li className="text-zinc-500">Sin documentos.</li>}
+        {rows.length === 0 && <li className="text-muted">Sin documentos.</li>}
       </ul>
 
       {canWrite && (
@@ -42,7 +42,7 @@ export async function DocumentsSection({ caseId, contactId, back, canWrite }: Pr
               {caseId && <input type="hidden" name="case_id" value={caseId} />}
               {contactId && <input type="hidden" name="contact_id" value={contactId} />}
               <input type="hidden" name="back" value={back} />
-              <label className="flex flex-col gap-1 text-sm">
+              <label className="field">
                 Generar desde plantilla
                 <select name="template_id" required className={`${inputClass} h-10 w-64`}>
                   {templates.map((t) => (
@@ -52,7 +52,7 @@ export async function DocumentsSection({ caseId, contactId, back, canWrite }: Pr
               </label>
               <button
                 type="submit"
-                className="h-10 rounded-[5px] bg-brand px-4 text-sm font-semibold uppercase tracking-wide text-white hover:bg-brand-dark"
+                className="btn btn-primary"
               >
                 Generar
               </button>

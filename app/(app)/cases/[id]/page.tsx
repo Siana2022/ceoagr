@@ -46,7 +46,7 @@ export default async function CasePage({ params }: PageProps<"/cases/[id]">) {
   const status = type.pipeline.find((s) => s.key === c.status);
 
   const rows: [string, React.ReactNode][] = [
-    ["Contacto", contact ? <Link key="c" href={`/contacts/${contact.id}`} className="text-brand underline">{contact.name}</Link> : "—"],
+    ["Contacto", contact ? <Link key="c" href={`/contacts/${contact.id}`} className="link">{contact.name}</Link> : "—"],
     ["Tipo", type.name],
     ["Prioridad", PRIORITY_LABELS[c.priority as Priority]],
     ["Fecha límite", fmtDate(c.due_at)],
@@ -67,20 +67,20 @@ export default async function CasePage({ params }: PageProps<"/cases/[id]">) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <Link href="/cases" className="text-sm underline">← Expedientes</Link>
-          <h1 className="mt-1 text-xl font-semibold">
+          <Link href="/cases" className="link text-sm">← Expedientes</Link>
+          <h1 className="page-title mt-1">
             {c.code} · {c.title}
-            {c.archived && <span className="ml-2 text-sm font-normal text-zinc-500">(archivado)</span>}
+            {c.archived && <span className="ml-2 text-sm font-normal text-muted">(archivado)</span>}
           </h1>
           <div className="mt-2"><StatusBadge status={status} fallback={c.status} /></div>
         </div>
         {writable && (
           <div className="flex items-center gap-3 text-sm">
-            <Link href={`/cases/${c.id}/edit`} className="underline">Editar</Link>
+            <Link href={`/cases/${c.id}/edit`} className="link">Editar</Link>
             {c.archived ? (
-              <form action={restoreCase.bind(null, c.id)}><button type="submit" className="underline">Restaurar</button></form>
+              <form action={restoreCase.bind(null, c.id)}><button type="submit" className="link">Restaurar</button></form>
             ) : (
-              <form action={archiveCase.bind(null, c.id)}><button type="submit" className="underline">Archivar</button></form>
+              <form action={archiveCase.bind(null, c.id)}><button type="submit" className="link">Archivar</button></form>
             )}
           </div>
         )}
@@ -88,20 +88,20 @@ export default async function CasePage({ params }: PageProps<"/cases/[id]">) {
 
       {writable && !c.archived && (
         <form action={changeCaseStatus.bind(null, c.id)} className="flex items-end gap-2">
-          <label className="flex flex-col gap-1 text-sm">
+          <label className="field">
             Cambiar estado
             <select name="status" defaultValue={c.status} className={`${inputClass} h-10`}>
               {type.pipeline.map((s) => (<option key={s.key} value={s.key}>{s.label}</option>))}
             </select>
           </label>
-          <button type="submit" className="h-10 rounded-[5px] border border-brand px-4 text-sm font-medium text-brand hover:bg-brand hover:text-white">Aplicar</button>
+          <button type="submit" className="btn btn-secondary">Aplicar</button>
         </form>
       )}
 
-      <dl className="grid max-w-2xl grid-cols-[12rem_1fr] gap-x-4 gap-y-2 text-sm">
+      <dl className="dl-grid card max-w-2xl p-6">
         {[...rows, ...custom].map(([k, v]) => (
           <div key={k} className="contents">
-            <dt className="text-zinc-500">{k}</dt>
+            <dt className="text-muted">{k}</dt>
             <dd>{v}</dd>
           </div>
         ))}
@@ -109,26 +109,26 @@ export default async function CasePage({ params }: PageProps<"/cases/[id]">) {
 
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Tareas</h2>
-          {writable && <Link href={`/tasks/new?case=${c.id}`} className="text-sm text-brand underline">Nueva tarea</Link>}
+          <h2 className="section-title">Tareas</h2>
+          {writable && <Link href={`/tasks/new?case=${c.id}`} className="link text-sm">Nueva tarea</Link>}
         </div>
         <TaskTable rows={tasks.rows} names={tasks.names} back={`/cases/${c.id}`} canWrite={writable} showLinks={false} empty="Este expediente no tiene tareas." />
       </section>
 
       <DocumentsSection caseId={c.id} back={`/cases/${c.id}`} canWrite={writable} />
 
-      <section className="flex max-w-2xl flex-col gap-3">
-        <h2 className="text-lg font-semibold">Historial</h2>
+      <section className="card flex max-w-2xl flex-col gap-3 p-6">
+        <h2 className="section-title">Historial</h2>
         <ul className="flex flex-col gap-2 text-sm">
           {events.map((e) => (
             <li key={e.id} className="flex justify-between gap-4 border-b border-zinc-100 pb-2">
               <span>{eventText(e, type.pipeline, names)}</span>
-              <span className="shrink-0 text-zinc-500">
+              <span className="shrink-0 text-muted">
                 {(e.actor_id && names.get(e.actor_id)) || "Sistema"} · {fmtDateTime(e.created_at)}
               </span>
             </li>
           ))}
-          {events.length === 0 && <li className="text-zinc-500">Sin actividad.</li>}
+          {events.length === 0 && <li className="text-muted">Sin actividad.</li>}
         </ul>
       </section>
     </div>
