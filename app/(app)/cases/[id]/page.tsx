@@ -7,6 +7,8 @@ import { PRIORITY_LABELS, type CaseEvent, type PipelineStatus, type Priority } f
 import { fmtDate, fmtDateTime } from "@/lib/modules/format";
 import { getCurrentRole } from "@/lib/modules/session";
 import { canWrite } from "@/lib/modules/nav";
+import { listTasks } from "@/lib/modules/tasks/queries";
+import { TaskTable } from "@/components/tasks/TaskTable";
 import { StatusBadge } from "@/components/cases/StatusBadge";
 import { inputClass } from "@/components/form-styles";
 
@@ -32,7 +34,11 @@ export default async function CasePage({ params }: PageProps<"/cases/[id]">) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 
-  const [found, role] = await Promise.all([getCase(id), getCurrentRole()]);
+  const [found, role, tasks] = await Promise.all([
+    getCase(id),
+    getCurrentRole(),
+    listTasks({ caseId: id, state: "all", limit: 50 }),
+  ]);
   if (!found) notFound();
   const { kase: c, contact, type, events, names } = found;
   const writable = role ? canWrite(role) : false;
@@ -99,6 +105,14 @@ export default async function CasePage({ params }: PageProps<"/cases/[id]">) {
           </div>
         ))}
       </dl>
+
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Tareas</h2>
+          {writable && <Link href={`/tasks/new?case=${c.id}`} className="text-sm text-brand underline">Nueva tarea</Link>}
+        </div>
+        <TaskTable rows={tasks.rows} names={tasks.names} back={`/cases/${c.id}`} canWrite={writable} showLinks={false} empty="Este expediente no tiene tareas." />
+      </section>
 
       <section className="flex max-w-2xl flex-col gap-3">
         <h2 className="text-lg font-semibold">Historial</h2>
