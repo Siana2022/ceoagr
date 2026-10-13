@@ -10,7 +10,7 @@ export type NavItem = {
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Panel", ready: true },
   { href: "/contacts", label: "Contactos", ready: true },
-  { href: "/cases", label: "Expedientes", ready: false },
+  { href: "/cases", label: "Expedientes", ready: true },
   { href: "/tasks", label: "Tareas", ready: false },
   { href: "/calendar", label: "Agenda", ready: false },
   { href: "/documents", label: "Documentos", ready: false },

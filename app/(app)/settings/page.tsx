@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isStaffRole, ROLE_LABELS, type AppRole } from "@/lib/modules/nav";
@@ -29,6 +30,13 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-xl font-semibold">Ajustes</h1>
+
+      {role === "owner" || role === "admin" ? (
+        <section className="flex max-w-2xl flex-col gap-2">
+          <h2 className="text-lg font-semibold">Expedientes</h2>
+          <Link href="/settings/case-types" className="text-sm text-brand underline">Configurar tipos de expediente (estados y campos)</Link>
+        </section>
+      ) : null}
 
       <section className="flex max-w-2xl flex-col gap-3">
         <h2 className="text-lg font-semibold">Contactos: campos obligatorios</h2>

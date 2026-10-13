@@ -1,0 +1,185 @@
+import Link from "next/link";
+import { getCurrentRole } from "@/lib/modules/session";
+import { canWrite } from "@/lib/modules/nav";
+import { CASES_PAGE_SIZE, listCases, listCaseTypes, type CaseFilters } from "@/lib/modules/cases/queries";
+import { changeCaseStatus } from "@/lib/modules/cases/actions";
+import { PRIORITY_LABELS, type Priority } from "@/lib/modules/cases/types";
+import { fmtDate } from "@/lib/modules/format";
+import { StatusBadge } from "@/components/cases/StatusBadge";
+import { inputClass } from "@/components/form-styles";
+
+const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+
+export default async function CasesPage({ searchParams }: PageProps<"/cases">) {
+  const sp = await searchParams;
+  const types = await listCaseTypes(true);
+  const q = first(sp.q) ?? "";
+  const board = first(sp.view) === "board";
+  const archived = first(sp.archived) === "1";
+  const requestedType = first(sp.type);
+  const typeId = types.find((t) => t.id === requestedType)?.id ?? (board ? types.find((t) => !t.archived)?.id : undefined);
+  const status = first(sp.status) ?? "";
+  const sort = (["created_at", "due_at", "code"] as const).find((s) => s === first(sp.sort)) ?? "created_at";
+  const dir = first(sp.dir) === "asc" ? "asc" : "desc";
+  const page = Number.parseInt(first(sp.page) ?? "1", 10) || 1;
+
+  const filters: CaseFilters = { q, typeId, status: board ? undefined : status || undefined, archived, sort, dir, page, all: board };
+  const [role, { rows, total, owners, error, page: current }] = await Promise.all([
+    getCurrentRole(),
+    listCases(filters),
+  ]);
+  const typeById = new Map(types.map((t) => [t.id, t]));
+  const selectedType = typeId ? typeById.get(typeId) : undefined;
+
+  const href = (over: Record<string, string | undefined>) => {
+    const p = new URLSearchParams();
+    const merged: Record<string, string | undefined> = {
+      q, type: typeId, status, view: board ? "board" : undefined, archived: archived ? "1" : undefined,
+      sort, dir, page: String(current), ...over,
+    };
+    for (const [k, v] of Object.entries(merged)) if (v) p.set(k, v);
+    return `/cases?${p.toString()}`;
+  };
+  const sortHref = (col: string) => href({ sort: col, dir: sort === col && dir === "asc" ? "desc" : "asc", page: "1" });
+  const pages = Math.max(1, Math.ceil(total / CASES_PAGE_SIZE));
+  const activeTypes = types.filter((t) => !t.archived);
+  const tab = "rounded-[5px] px-3 py-1.5 text-sm";
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-semibold">{archived ? "Expedientes archivados" : "Expedientes"}</h1>
+        <div className="flex items-center gap-3">
+          <div className="flex rounded-[5px] border border-zinc-300 p-0.5">
+            <Link href={href({ view: undefined, page: "1" })} className={`${tab} ${!board ? "bg-brand text-white" : ""}`}>Tabla</Link>
+            <Link href={href({ view: "board", page: "1" })} className={`${tab} ${board ? "bg-brand text-white" : ""}`}>Tablero</Link>
+          </div>
+          {role && canWrite(role) && (
+            <Link href={`/cases/new${typeId ? `?type=${typeId}` : ""}`} className="rounded-[5px] bg-brand px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white hover:bg-brand-dark">
+              Nuevo expediente
+            </Link>
+          )}
+        </div>
+      </div>
+
+      <form method="get" role="search" className="flex flex-wrap items-end gap-3">
+        {board && <input type="hidden" name="view" value="board" />}
+        <label className="flex flex-col gap-1 text-sm">
+          Buscar
+          <input name="q" type="search" autoComplete="off" data-lpignore="true" data-1p-ignore defaultValue={q} placeholder="Título o código" className={`${inputClass} h-10 w-64`} />
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          Tipo
+          <select name="type" defaultValue={typeId ?? ""} className={`${inputClass} h-10`}>
+            {!board && <option value="">Todos</option>}
+            {types.map((t) => (<option key={t.id} value={t.id}>{t.name}</option>))}
+          </select>
+        </label>
+        {!board && selectedType && (
+          <label className="flex flex-col gap-1 text-sm">
+            Estado
+            <select name="status" defaultValue={status} className={`${inputClass} h-10`}>
+              <option value="">Todos</option>
+              {selectedType.pipeline.map((s) => (<option key={s.key} value={s.key}>{s.label}</option>))}
+            </select>
+          </label>
+        )}
+        <label className="flex h-10 items-center gap-2 text-sm">
+          <input type="checkbox" name="archived" value="1" defaultChecked={archived} />
+          Ver archivados
+        </label>
+        <button type="submit" className="h-10 rounded-[5px] border border-brand px-4 text-sm font-medium text-brand hover:bg-brand hover:text-white">Filtrar</button>
+      </form>
+
+      {error && <p role="alert" className="text-sm text-red-600">No se pudieron cargar los expedientes.</p>}
+
+      {activeTypes.length === 0 && (
+        <p className="rounded-[5px] border border-zinc-200 p-4 text-sm">
+          Aún no hay tipos de expediente. Un administrador debe crearlos en{" "}
+          <Link href="/settings/case-types" className="underline">Ajustes → Tipos de expediente</Link>.
+        </p>
+      )}
+
+      {board && selectedType ? (
+        <div className="flex gap-4 overflow-x-auto pb-2">
+          {selectedType.pipeline.map((s) => {
+            const col = rows.filter((r) => r.status === s.key);
+            return (
+              <section key={s.key} className="w-72 shrink-0 rounded-[5px] bg-zinc-50 p-3">
+                <h2 className="mb-3 flex items-center justify-between text-sm font-semibold">
+                  <StatusBadge status={s} />
+                  <span className="text-zinc-500">{col.length}</span>
+                </h2>
+                <ul className="flex flex-col gap-2">
+                  {col.map((c) => (
+                    <li key={c.id} className="rounded-[5px] border border-zinc-200 bg-white p-3 text-sm">
+                      <Link href={`/cases/${c.id}`} className="font-medium text-brand underline">{c.code}</Link>
+                      <p className="mt-1">{c.title}</p>
+                      <p className="text-xs text-zinc-500">{c.contacts?.name}</p>
+                      {c.due_at && <p className="text-xs text-zinc-500">Vence {fmtDate(c.due_at)}</p>}
+                      {role && canWrite(role) && (
+                        <form action={changeCaseStatus.bind(null, c.id)} className="mt-2 flex gap-1">
+                          <input type="hidden" name="back" value="board" />
+                          <select name="status" defaultValue={c.status} aria-label="Cambiar estado" className="min-w-0 flex-1 rounded border border-zinc-300 px-1 py-1 text-xs">
+                            {selectedType.pipeline.map((o) => (<option key={o.key} value={o.key}>{o.label}</option>))}
+                          </select>
+                          <button type="submit" className="rounded border border-brand px-2 text-xs text-brand">Mover</button>
+                        </form>
+                      )}
+                    </li>
+                  ))}
+                  {col.length === 0 && <li className="text-xs text-zinc-400">Sin expedientes</li>}
+                </ul>
+              </section>
+            );
+          })}
+        </div>
+      ) : (
+        <>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-zinc-200">
+                <tr>
+                  <th className="py-2 pr-4 font-medium"><Link href={sortHref("code")}>Código{sort === "code" ? (dir === "asc" ? " ↑" : " ↓") : ""}</Link></th>
+                  <th className="py-2 pr-4 font-medium">Título</th>
+                  <th className="py-2 pr-4 font-medium">Contacto</th>
+                  <th className="py-2 pr-4 font-medium">Estado</th>
+                  <th className="py-2 pr-4 font-medium">Prioridad</th>
+                  <th className="py-2 pr-4 font-medium"><Link href={sortHref("due_at")}>Vence{sort === "due_at" ? (dir === "asc" ? " ↑" : " ↓") : ""}</Link></th>
+                  <th className="py-2 font-medium">Responsable</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((c) => {
+                  const st = typeById.get(c.case_type_id)?.pipeline.find((s) => s.key === c.status);
+                  return (
+                    <tr key={c.id} className="border-b border-zinc-100">
+                      <td className="py-2 pr-4"><Link href={`/cases/${c.id}`} className="font-medium text-brand underline">{c.code}</Link></td>
+                      <td className="py-2 pr-4">{c.title}</td>
+                      <td className="py-2 pr-4">{c.contacts?.name ?? "—"}</td>
+                      <td className="py-2 pr-4"><StatusBadge status={st} fallback={c.status} /></td>
+                      <td className="py-2 pr-4">{PRIORITY_LABELS[c.priority as Priority]}</td>
+                      <td className="py-2 pr-4">{fmtDate(c.due_at)}</td>
+                      <td className="py-2">{(c.owner_id && owners.get(c.owner_id)) || "—"}</td>
+                    </tr>
+                  );
+                })}
+                {rows.length === 0 && !error && (
+                  <tr><td colSpan={7} className="py-8 text-center text-zinc-500">{q || typeId || status ? "Ningún expediente coincide con los filtros." : "Aún no hay expedientes."}</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span>{total} expediente{total === 1 ? "" : "s"}</span>
+            <div className="flex items-center gap-3">
+              {current > 1 ? <Link href={href({ page: String(current - 1) })} className="underline">Anterior</Link> : <span className="text-zinc-400">Anterior</span>}
+              <span>Página {current} de {pages}</span>
+              {current < pages ? <Link href={href({ page: String(current + 1) })} className="underline">Siguiente</Link> : <span className="text-zinc-400">Siguiente</span>}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
