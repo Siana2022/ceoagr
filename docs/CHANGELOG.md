@@ -23,5 +23,8 @@
 - Ajustes: campos obligatorios configurables (owner/admin/manager).
 - Tests: esquema Zod (Vitest) y aislamiento entre organizaciones (`RUN_RLS_TESTS=1`, requiere `SUPABASE_SERVICE_ROLE_KEY`).
 
+### Identidad visual
+- Tema claro con la imagen de AGR (grupoagringenieria.com): azul #003366, barra superior negra, acento #F5C2A1, Work Sans + Roboto.
+
 ### Pendiente (entrega B)
 - Fusión de duplicados, relaciones entre contactos, CSV, filtros guardados, columnas configurables, compartir contactos desde la UI.

@@ -27,19 +27,24 @@ async function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-full flex-1">
-      <aside className="hidden w-56 shrink-0 border-r border-zinc-200 md:block dark:border-zinc-800">
-        <div className="px-6 py-4 font-semibold">{org?.name}</div>
+      <aside className="hidden w-60 shrink-0 border-r border-zinc-200 md:block">
+        <div className="px-6 py-5">
+          <p className="font-heading text-3xl font-bold leading-none tracking-tight text-black">AGR</p>
+          <p className="mt-1 text-[11px] font-medium uppercase leading-tight tracking-wide text-zinc-600">
+            Integral Engineering Solutions
+          </p>
+        </div>
         <Sidebar items={items} />
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between gap-4 border-b border-zinc-200 px-6 py-3 dark:border-zinc-800">
-          <span className="font-semibold md:hidden">{org?.name}</span>
-          <div className="ml-auto flex items-center gap-4 text-sm">
+        <header className="flex items-center justify-between gap-4 bg-topbar px-6 py-3 text-white">
+          <span className="font-heading font-semibold">{org?.name}</span>
+          <div className="flex items-center gap-4 text-sm">
             <span>
               {user.email} · {ROLE_LABELS[role]}
             </span>
             <form action={logout}>
-              <button type="submit" className="underline">
+              <button type="submit" className="text-accent underline">
                 Salir
               </button>
             </form>

@@ -26,7 +26,7 @@ export default async function HomePage() {
         {cards.map((c) => (
           <li
             key={c.label}
-            className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800"
+            className="rounded-lg border border-zinc-200 p-4"
           >
             <p className="text-sm text-zinc-500">{c.label}</p>
             <p className="mt-1 text-3xl font-semibold">{c.value ?? "—"}</p>

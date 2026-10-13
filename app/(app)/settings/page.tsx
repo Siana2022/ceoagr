@@ -50,7 +50,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
 
       <h2 className="text-lg font-semibold">Equipo</h2>
       <table className="w-full max-w-2xl text-left text-sm">
-        <thead className="border-b border-zinc-200 dark:border-zinc-800">
+        <thead className="border-b border-zinc-200">
           <tr>
             <th className="py-2 font-medium">Nombre</th>
             <th className="py-2 font-medium">Rol</th>
@@ -59,7 +59,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
         </thead>
         <tbody>
           {(members ?? []).map((m) => (
-            <tr key={m.user_id} className="border-b border-zinc-100 dark:border-zinc-900">
+            <tr key={m.user_id} className="border-b border-zinc-100">
               <td className="py-2">{names.get(m.user_id) || "Sin nombre"}</td>
               <td className="py-2">{ROLE_LABELS[m.role as AppRole]}</td>
               <td className="py-2">{m.active ? "Activo" : "Inactivo"}</td>

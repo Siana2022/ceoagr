@@ -61,10 +61,10 @@ export default async function ContactPage({ params }: PageProps<"/contacts/[id]"
         )}
       </div>
 
-      <nav aria-label="Secciones del contacto" className="flex flex-wrap gap-2 border-b border-zinc-200 text-sm dark:border-zinc-800">
-        <span aria-current="page" className="border-b-2 border-zinc-900 px-3 py-2 font-medium dark:border-zinc-50">Resumen</span>
+      <nav aria-label="Secciones del contacto" className="flex flex-wrap gap-2 border-b border-zinc-200 text-sm">
+        <span aria-current="page" className="border-b-2 border-brand px-3 py-2 font-medium text-brand">Resumen</span>
         {FUTURE_TABS.map((t) => (
-          <span key={t} aria-disabled="true" className="px-3 py-2 text-zinc-400 dark:text-zinc-600">{t}</span>
+          <span key={t} aria-disabled="true" className="px-3 py-2 text-zinc-400">{t}</span>
         ))}
       </nav>
 

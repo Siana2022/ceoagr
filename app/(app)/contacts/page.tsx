@@ -42,7 +42,7 @@ export default async function ContactsPage({ searchParams }: PageProps<"/contact
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{archived ? "Contactos archivados" : "Contactos"}</h1>
         {role && canWrite(role) && (
-          <Link href="/contacts/new" className="rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white dark:bg-zinc-50 dark:text-zinc-900">
+          <Link href="/contacts/new" className="rounded-[5px] bg-brand px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white hover:bg-brand-dark">
             Nuevo contacto
           </Link>
         )}
@@ -69,7 +69,7 @@ export default async function ContactsPage({ searchParams }: PageProps<"/contact
           <input type="checkbox" name="archived" value="1" defaultChecked={archived} />
           Ver archivados
         </label>
-        <button type="submit" className="h-10 rounded-md border border-zinc-300 px-4 text-sm hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800">
+        <button type="submit" className="h-10 rounded-[5px] border border-brand px-4 text-sm font-medium text-brand hover:bg-brand hover:text-white">
           Filtrar
         </button>
       </form>
@@ -78,7 +78,7 @@ export default async function ContactsPage({ searchParams }: PageProps<"/contact
 
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-zinc-200 dark:border-zinc-800">
+          <thead className="border-b border-zinc-200">
             <tr>
               <th className="py-2 pr-4 font-medium">
                 <Link href={sortHref("name")}>Nombre{sort === "name" ? (dir === "asc" ? " ↑" : " ↓") : ""}</Link>
@@ -95,9 +95,9 @@ export default async function ContactsPage({ searchParams }: PageProps<"/contact
           </thead>
           <tbody>
             {rows.map((c) => (
-              <tr key={c.id} className="border-b border-zinc-100 dark:border-zinc-900">
+              <tr key={c.id} className="border-b border-zinc-100">
                 <td className="py-2 pr-4">
-                  <Link href={`/contacts/${c.id}`} className="font-medium underline">{c.name}</Link>
+                  <Link href={`/contacts/${c.id}`} className="font-medium text-brand underline">{c.name}</Link>
                 </td>
                 <td className="py-2 pr-4">{CONTACT_KIND_LABELS[c.kind as ContactKind]}</td>
                 <td className="py-2 pr-4">{c.email ?? "—"}</td>

@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { Brand } from "@/components/Brand";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { buttonClass, inputClass } from "@/components/form-styles";
@@ -15,6 +16,7 @@ async function OnboardingPageContent({
 
   return (
     <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6 px-4">
+      <Brand />
       <h1 className="text-2xl font-semibold">Crea tu organización</h1>
       {typeof error === "string" && (
         <p role="alert" className="text-sm text-red-600">{error}</p>
