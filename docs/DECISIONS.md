@@ -29,3 +29,5 @@
 | 2026-10-15 | Importación CSV en dos pasos (vista previa y confirmación), máx. 2000 filas/5 MB, UTF-8; se revalida todo en el servidor al confirmar | No confiar en el cliente; omitir duplicados por defecto. |
 | 2026-10-15 | Vistas guardadas (`saved_views`): privadas por defecto; solo owner/admin/manager pueden compartirlas con el equipo | Spec 4.9. Guardan filtros y columnas. |
 | 2026-10-15 | Búsqueda global: consultas paralelas con la sesión del usuario (RLS decide lo visible); atajo «/» | Sin motor externo; índices trigram en títulos. |
+| 2026-10-15 | Dependencias de tareas finish-to-start solo dentro del mismo expediente; el trigger impide ciclos (directos e indirectos); una tarea con prerrequisitos sin terminar se marca «Bloqueada» pero no se impide trabajar en ella | Avisar sin frenar el trabajo real. |
+| 2026-10-15 | Gantt y tablero sin librerías externas (CSS/SVG propios; arrastrar y soltar nativo con selector de respaldo para teclado y móvil) | Menos dependencias y accesible. |

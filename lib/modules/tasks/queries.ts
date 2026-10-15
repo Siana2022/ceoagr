@@ -135,3 +135,93 @@ export async function listCaseOptions() {
     .limit(200);
   return (data ?? []) as { id: string; code: string; title: string }[];
 }
+
+// ------------------------------------------------------------ dependencies
+
+export async function getBlockedTaskIds(taskIds: string[]): Promise<Set<string>> {
+  const out = new Set<string>();
+  if (!taskIds.length) return out;
+  const supabase = await createClient();
+  const { data: deps } = await supabase
+    .from("task_dependencies")
+    .select("task_id, depends_on_task_id")
+    .in("task_id", taskIds);
+  if (!deps?.length) return out;
+  const { data: prereq } = await supabase
+    .from("tasks")
+    .select("id, status")
+    .in("id", [...new Set(deps.map((d) => d.depends_on_task_id))]);
+  const status = new Map((prereq ?? []).map((t) => [t.id, t.status]));
+  for (const d of deps) {
+    const st = status.get(d.depends_on_task_id);
+    if (st && st !== "done" && st !== "cancelled") out.add(d.task_id);
+  }
+  return out;
+}
+
+export async function getTaskDependencies(taskId: string, caseId: string | null) {
+  const supabase = await createClient();
+  const [{ data: up }, { data: down }] = await Promise.all([
+    supabase.from("task_dependencies").select("id, depends_on_task_id").eq("task_id", taskId),
+    supabase.from("task_dependencies").select("id, task_id").eq("depends_on_task_id", taskId),
+  ]);
+  const ids = [...new Set([...(up ?? []).map((d) => d.depends_on_task_id), ...(down ?? []).map((d) => d.task_id)])];
+  const info = new Map<string, { title: string; status: string }>();
+  if (ids.length) {
+    const { data } = await supabase.from("tasks").select("id, title, status").in("id", ids);
+    for (const t of data ?? []) info.set(t.id, { title: t.title, status: t.status });
+  }
+
+  let candidates: { id: string; title: string }[] = [];
+  if (caseId) {
+    const { data } = await supabase
+      .from("tasks")
+      .select("id, title")
+      .eq("case_id", caseId)
+      .neq("id", taskId)
+      .neq("status", "cancelled")
+      .order("created_at")
+      .limit(100);
+    const linked = new Set(ids);
+    candidates = (data ?? []).filter((t) => !linked.has(t.id));
+  }
+  return {
+    dependsOn: (up ?? []).map((d) => ({ depId: d.id, taskId: d.depends_on_task_id, ...(info.get(d.depends_on_task_id) ?? { title: "Tarea no visible", status: "todo" }) })),
+    blocks: (down ?? []).map((d) => ({ depId: d.id, taskId: d.task_id, ...(info.get(d.task_id) ?? { title: "Tarea no visible", status: "todo" }) })),
+    candidates,
+  };
+}
+
+export async function getCaseGanttData(caseId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("tasks")
+    .select("id, title, status, start_at, due_at, assignee_id, priority")
+    .eq("case_id", caseId)
+    .order("created_at")
+    .limit(500);
+  const rows = (data ?? []) as { id: string; title: string; status: "todo" | "in_progress" | "done" | "cancelled"; start_at: string | null; due_at: string | null; assignee_id: string | null; priority: string }[];
+
+  const names = new Map<string, string>();
+  const userIds = [...new Set(rows.map((r) => r.assignee_id).filter(Boolean))] as string[];
+  if (userIds.length) {
+    const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", userIds);
+    for (const p of profiles ?? []) names.set(p.user_id, p.full_name);
+  }
+  const { data: deps } = rows.length
+    ? await supabase.from("task_dependencies").select("task_id, depends_on_task_id").in("task_id", rows.map((r) => r.id))
+    : { data: [] };
+
+  return {
+    tasks: rows.map((r) => ({
+      id: r.id,
+      title: r.title,
+      status: r.status,
+      start: r.start_at ? r.start_at.slice(0, 10) : null,
+      due: r.due_at ? r.due_at.slice(0, 10) : null,
+      assignee: (r.assignee_id && names.get(r.assignee_id)) || null,
+      priority: r.priority,
+    })),
+    deps: (deps ?? []) as { task_id: string; depends_on_task_id: string }[],
+  };
+}

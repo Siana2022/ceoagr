@@ -5,10 +5,12 @@ import { getCurrentRole } from "@/lib/modules/session";
 import { canWrite } from "@/lib/modules/nav";
 import { listMembers } from "@/lib/modules/members";
 import { listContactOptions } from "@/lib/modules/cases/queries";
-import { getTask, listCaseOptions } from "@/lib/modules/tasks/queries";
+import { getTask, getTaskDependencies, listCaseOptions } from "@/lib/modules/tasks/queries";
 import {
   addChecklistItem,
+  addDependency,
   addSubtask,
+  removeDependency,
   deleteChecklistItem,
   deleteTask,
   setTaskStatus,
@@ -20,8 +22,8 @@ import { fmtDate } from "@/lib/modules/format";
 import { TaskForm } from "@/components/tasks/TaskForm";
 import { inputClass } from "@/components/form-styles";
 
-export default async function TaskPage({ params }: PageProps<"/tasks/[id]">) {
-  const { id } = await params;
+export default async function TaskPage({ params, searchParams }: PageProps<"/tasks/[id]">) {
+  const [{ id }, sp] = await Promise.all([params, searchParams]);
   if (!z.uuid().safeParse(id).success) notFound();
 
   const [found, role, members, cases, contacts] = await Promise.all([
@@ -33,6 +35,8 @@ export default async function TaskPage({ params }: PageProps<"/tasks/[id]">) {
   ]);
   if (!found) notFound();
   const { task, kase, contact, parent, subtasks, checklist, names } = found;
+  const deps = await getTaskDependencies(id, task.case_id);
+  const waiting = deps.dependsOn.filter((d) => d.status !== "done" && d.status !== "cancelled");
   const writable = role ? canWrite(role) : false;
   const doneItems = checklist.filter((c) => c.done).length;
 
@@ -98,6 +102,53 @@ export default async function TaskPage({ params }: PageProps<"/tasks/[id]">) {
             <button type="submit" className="btn btn-secondary">Añadir</button>
           </form>
         )}
+      </section>
+
+      <section className="card flex max-w-2xl flex-col gap-3 p-6">
+        <h2 className="section-title">Dependencias</h2>
+        {waiting.length > 0 && task.status !== "done" && (
+          <p className="alert-error">Esta tarea está bloqueada: espera a {waiting.map((w) => `«${w.title}»`).join(", ")}.</p>
+        )}
+        {sp.dep_error && (
+          <p role="alert" className="alert-error">
+            {sp.dep_error === "circular" ? "No se puede: crearía una dependencia circular." : "No se pudo añadir la dependencia (deben ser tareas del mismo expediente)."}
+          </p>
+        )}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <h3 className="mb-2 text-sm font-semibold">Depende de</h3>
+            <ul className="flex flex-col gap-1.5 text-sm">
+              {deps.dependsOn.map((d) => (
+                <li key={d.depId} className="flex items-center justify-between gap-2">
+                  <Link href={`/tasks/${d.taskId}`} className={`link truncate ${d.status === "done" ? "line-through opacity-60" : ""}`}>{d.title}</Link>
+                  {writable && <form action={removeDependency.bind(null, id, d.depId)}><button type="submit" className="link-danger text-xs">Quitar</button></form>}
+                </li>
+              ))}
+              {deps.dependsOn.length === 0 && <li className="text-muted">Ninguna.</li>}
+            </ul>
+          </div>
+          <div>
+            <h3 className="mb-2 text-sm font-semibold">Bloquea a</h3>
+            <ul className="flex flex-col gap-1.5 text-sm">
+              {deps.blocks.map((d) => (
+                <li key={d.depId}><Link href={`/tasks/${d.taskId}`} className="link">{d.title}</Link></li>
+              ))}
+              {deps.blocks.length === 0 && <li className="text-muted">Ninguna.</li>}
+            </ul>
+          </div>
+        </div>
+        {writable && task.case_id && deps.candidates.length > 0 && (
+          <form action={addDependency.bind(null, id)} className="flex flex-wrap items-end gap-2">
+            <label className="field min-w-56 flex-1">
+              Esta tarea no puede empezar hasta que termine…
+              <select name="depends_on" required className="input">
+                {deps.candidates.map((c) => (<option key={c.id} value={c.id}>{c.title}</option>))}
+              </select>
+            </label>
+            <button type="submit" className="btn btn-secondary">Añadir dependencia</button>
+          </form>
+        )}
+        {!task.case_id && <p className="text-xs text-muted">Las dependencias solo existen entre tareas de un mismo expediente.</p>}
       </section>
 
       {!task.parent_task_id && (

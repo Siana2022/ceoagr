@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -126,6 +127,38 @@ export async function deleteChecklistItem(taskId: string, itemId: string) {
   if (z.uuid().safeParse(itemId).success) {
     const supabase = await createClient();
     await supabase.from("task_checklists").delete().eq("id", itemId);
+  }
+  redirect(`/tasks/${taskId}`);
+}
+
+// ------------------------------------------------- board moves & dependencies
+
+export async function moveTaskAction(id: string, status: string): Promise<{ ok: boolean }> {
+  const parsed = z.enum(["todo", "in_progress", "done"]).safeParse(status);
+  if (!z.uuid().safeParse(id).success || !parsed.success) return { ok: false };
+  const role = await getCurrentRole();
+  if (!role || !canWrite(role)) return { ok: false };
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("tasks").update({ status: parsed.data }).eq("id", id).select("id");
+  revalidatePath("/tasks");
+  return { ok: !error && !!data?.length };
+}
+
+export async function addDependency(taskId: string, fd: FormData) {
+  const dep = z.uuid().safeParse(fd.get("depends_on"));
+  const back = `/tasks/${taskId}`;
+  if (!z.uuid().safeParse(taskId).success || !dep.success) redirect(`${back}?dep_error=1`);
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("task_dependencies")
+    .insert({ task_id: taskId, depends_on_task_id: dep.data });
+  redirect(error ? `${back}?dep_error=${/circular/.test(error.message) ? "circular" : "1"}` : back);
+}
+
+export async function removeDependency(taskId: string, depId: string) {
+  if (z.uuid().safeParse(depId).success) {
+    const supabase = await createClient();
+    await supabase.from("task_dependencies").delete().eq("id", depId);
   }
   redirect(`/tasks/${taskId}`);
 }

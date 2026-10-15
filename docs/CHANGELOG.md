@@ -52,5 +52,11 @@
 - Búsqueda global (contactos, expedientes, oportunidades, presupuestos, tareas, documentos) con atajo «/».
 - Migración `…1000_contacts_extras`.
 
+### Tareas: tablero, dependencias y Gantt
+- Tablero de tareas (Pendiente / En curso / Hecha) con arrastrar y soltar y avisos de vencida y bloqueada.
+- Dependencias entre tareas del mismo expediente (sin ciclos), editables en la ficha de la tarea.
+- Planificación (Gantt) por expediente con zoom por días o semanas, flechas de dependencia, línea de hoy y tareas sin fechas aparte.
+- Migración `…1100_task_dependencies`.
+
 ### Pendiente (siguiente)
 - Fusión de duplicados, relaciones entre contactos, CSV, filtros guardados, columnas configurables, compartir contactos desde la UI.

@@ -12,9 +12,10 @@ type Props = {
   canWrite: boolean;
   showLinks?: boolean;
   empty?: string;
+  blocked?: Set<string>;
 };
 
-export function TaskTable({ rows, names, back, canWrite, showLinks = true, empty }: Props) {
+export function TaskTable({ rows, names, back, canWrite, showLinks = true, empty, blocked }: Props) {
   const today = new Date().toISOString().slice(0, 10);
 
   return (
@@ -56,6 +57,9 @@ export function TaskTable({ rows, names, back, canWrite, showLinks = true, empty
                   <Link href={`/tasks/${t.id}`} className={`link ${done ? "line-through opacity-60" : ""}`}>
                     {t.title}
                   </Link>
+                  {blocked?.has(t.id) && t.status !== "done" && (
+                    <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">Bloqueada</span>
+                  )}
                 </td>
                 {showLinks && (
                   <td>

@@ -118,7 +118,7 @@ export default async function CasePage({ params }: PageProps<"/cases/[id]">) {
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h2 className="section-title">Tareas</h2>
-          {writable && <Link href={`/tasks/new?case=${c.id}`} className="link text-sm">Nueva tarea</Link>}
+          <div className="flex items-center gap-4"><Link href={`/tasks/planning?case=${c.id}`} className="link text-sm">Ver Gantt</Link>{writable && <Link href={`/tasks/new?case=${c.id}`} className="link text-sm">Nueva tarea</Link>}</div>
         </div>
         <TaskTable rows={tasks.rows} names={tasks.names} back={`/cases/${c.id}`} canWrite={writable} showLinks={false} empty="Este expediente no tiene tareas." />
       </section>
