@@ -13,7 +13,7 @@ type Props = { caseId?: string; contactId?: string; back: string; canWrite: bool
 export async function DocumentsSection({ caseId, contactId, back, canWrite }: Props) {
   const [{ rows, error }, templates] = await Promise.all([
     listDocuments({ caseId, contactId, limit: 50 }),
-    canWrite ? listTemplates() : Promise.resolve([]),
+    canWrite ? listTemplates(caseId ? ["case", "general"] : ["contact", "general"]) : Promise.resolve([]),
   ]);
 
   return (
@@ -43,7 +43,7 @@ export async function DocumentsSection({ caseId, contactId, back, canWrite }: Pr
               {contactId && <input type="hidden" name="contact_id" value={contactId} />}
               <input type="hidden" name="back" value={back} />
               <label className="field">
-                Generar desde plantilla
+                Generar PDF desde plantilla
                 <select name="template_id" required className={`${inputClass} h-10 w-64`}>
                   {templates.map((t) => (
                     <option key={t.id} value={t.id}>{t.name}</option>

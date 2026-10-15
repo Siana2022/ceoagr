@@ -15,7 +15,7 @@ export function formatHours(min: number | null | undefined) {
 
 export function formatMoney(v: number | null | undefined) {
   if (v == null) return "—";
-  return v.toLocaleString("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+  return v.toLocaleString("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0, useGrouping: "always" } as Intl.NumberFormatOptions);
 }
 
 // "1:30", "1,5", "1.5", "90m", "2h", "2h30" -> minutes (1..1440) or null.

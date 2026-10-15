@@ -36,6 +36,12 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
         )}
         <Link href="/settings/resources" className="btn btn-secondary btn-sm">Recursos de agenda</Link>
         <Link href="/settings/templates" className="btn btn-secondary btn-sm">Plantillas de documento</Link>
+        {(role === "owner" || role === "admin") && (
+          <Link href="/settings/audit" className="btn btn-secondary btn-sm">Registro de actividad</Link>
+        )}
+        {(role === "owner" || role === "admin") && (
+          <Link href="/settings/branding" className="btn btn-secondary btn-sm">Identidad de la empresa</Link>
+        )}
       </nav>
 
       {role === "owner" || role === "admin" ? (
@@ -54,7 +60,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
 
       <section className="card flex max-w-2xl flex-col gap-2 p-6">
         <h2 className="section-title">Documentos</h2>
-        <Link href="/settings/templates" className="link text-sm">Gestionar plantillas de documento</Link>
+        <Link href="/settings/templates" className="link text-sm">Crear y editar plantillas de documento (PDF)</Link>
       </section>
 
       <section className="card flex max-w-2xl flex-col gap-2 p-6">

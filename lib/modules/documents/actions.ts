@@ -6,10 +6,11 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentRole } from "@/lib/modules/session";
 import { canWrite, isStaffRole } from "@/lib/modules/nav";
 import { safeBack } from "@/lib/modules/redirect";
-import { fmtDate } from "@/lib/modules/format";
-import { renderTemplate, wrapHtml } from "./render";
 import { parseTags, safeFileName, storeFile } from "./storage";
 import { BLOCKED_EXTENSIONS, MAX_FILE_BYTES, type DocFormState } from "./types";
+import { generatePdfDocument } from "./generate";
+import { readTemplateForm } from "./template-schema";
+import { STARTER_TEMPLATES } from "./starters";
 
 const uuidOrNull = (v: FormDataEntryValue | null) => {
   const s = typeof v === "string" ? v : "";
@@ -91,134 +92,117 @@ export async function restoreDocument(id: string) {
 
 // ------------------------------------------------------ from a template
 
+// Renders a template (PDF) for a case and/or contact and files it under Documentos.
 export async function generateFromTemplate(fd: FormData) {
   const back = safeBack(fd, "/documents");
   const role = await getCurrentRole();
   const templateId = uuidOrNull(fd.get("template_id"));
   const caseId = uuidOrNull(fd.get("case_id"));
-  const contactIdParam = uuidOrNull(fd.get("contact_id"));
-  if (!role || !canWrite(role) || !templateId || (!caseId && !contactIdParam)) redirect(back);
+  const contactId = uuidOrNull(fd.get("contact_id"));
+  if (!role || !canWrite(role) || !templateId || (!caseId && !contactId)) redirect(back);
 
-  const supabase = await createClient();
-  const { data: template } = await supabase
-    .from("document_templates")
-    .select("name, body")
-    .eq("id", templateId)
-    .maybeSingle();
-  if (!template) redirect(back);
-
-  let kase: Record<string, unknown> | null = null;
-  let contactId = contactIdParam;
-  if (caseId) {
-    const { data } = await supabase
-      .from("cases")
-      .select("code, title, status, priority, due_at, contact_id, custom_fields, case_types(pipeline)")
-      .eq("id", caseId)
-      .maybeSingle();
-    if (data) {
-      const pipeline = ((data.case_types as unknown as { pipeline: { key: string; label: string }[] } | null)?.pipeline) ?? [];
-      kase = {
-        code: data.code,
-        title: data.title,
-        status: pipeline.find((s) => s.key === data.status)?.label ?? data.status,
-        priority: data.priority,
-        due_at: fmtDate(data.due_at),
-        custom: data.custom_fields ?? {},
-      };
-      contactId = contactId ?? data.contact_id;
-    }
-  }
-
-  let contact: Record<string, unknown> = {};
-  if (contactId) {
-    const { data } = await supabase.from("contacts").select("*").eq("id", contactId).maybeSingle();
-    if (data) {
-      const a = (data.address ?? {}) as Record<string, string>;
-      contact = {
-        name: data.name,
-        legal_name: data.legal_name,
-        tax_id: data.tax_id,
-        email: data.email,
-        phone: data.phone,
-        mobile: data.mobile,
-        address: [a.street, a.postal_code, a.city, a.province, a.country].filter(Boolean).join(", "),
-      };
-    }
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const [{ data: org }, { data: profile }] = await Promise.all([
-    supabase.from("organizations").select("name").maybeSingle(),
-    user
-      ? supabase.from("profiles").select("full_name").eq("user_id", user.id).maybeSingle()
-      : Promise.resolve({ data: null }),
-  ]);
-
-  const { html } = renderTemplate(template.body, {
-    contact,
-    case: kase ?? {},
-    org: { name: org?.name ?? "" },
-    user: { name: profile?.full_name ?? "" },
-    today: fmtDate(new Date().toISOString()),
-  });
-
-  const title = `${template.name}${kase ? ` - ${kase.code}` : ""}`;
-  const blob = new Blob([wrapHtml(title, html)], { type: "text/html" });
-  const r = await storeFile({
-    file: blob,
-    fileName: `${title}.html`,
-    contentType: "text/html",
-    target: { caseId, contactId: caseId ? null : contactId },
-    tags: ["generado"],
-  });
-  redirect(r.id ? `/documents/${r.id}` : back);
+  const r = await generatePdfDocument({ templateId, caseId, contactId });
+  const sep = back.includes("?") ? "&" : "?";
+  redirect(r.documentId ? `/documents/${r.documentId}` : `${back}${sep}error=${encodeURIComponent(r.error ?? "No se pudo generar el documento")}`);
 }
 
 // ---------------------------------------------------------- templates CRUD
 
-const templateSchema = z.object({
-  name: z.string().trim().min(1, "Indica el nombre").max(120),
-  body: z.string().max(200_000),
-  case_type_id: z.preprocess((v) => (v === "" ? null : v), z.uuid().nullish()).transform((v) => v ?? null),
-});
-
-function readTemplate(fd: FormData) {
-  return templateSchema.safeParse({
-    name: fd.get("name"),
-    body: fd.get("body") ?? "",
-    case_type_id: fd.get("case_type_id") ?? "",
-  });
+async function staffOnly() {
+  const role = await getCurrentRole();
+  return !!role && isStaffRole(role);
 }
 
-export async function createTemplate(_prev: DocFormState, fd: FormData): Promise<DocFormState> {
-  const role = await getCurrentRole();
-  if (!role || !isStaffRole(role)) return { error: "No tienes permiso" };
-  const parsed = readTemplate(fd);
-  if (!parsed.success) return { error: parsed.error.issues[0].message };
+async function clearOtherDefaults(context: string, keepId: string | null) {
   const supabase = await createClient();
-  const { error } = await supabase.from("document_templates").insert({ ...parsed.data, kind: "html" });
-  if (error) return { error: "No se pudo crear la plantilla" };
-  redirect("/settings/templates");
+  let q = supabase.from("document_templates").update({ is_default: false }).eq("context", context).eq("is_default", true);
+  if (keepId) q = q.neq("id", keepId);
+  await q;
 }
 
-export async function updateTemplate(id: string, _prev: DocFormState, fd: FormData): Promise<DocFormState> {
-  const role = await getCurrentRole();
-  if (!role || !isStaffRole(role) || !z.uuid().safeParse(id).success) return { error: "No tienes permiso" };
-  const parsed = readTemplate(fd);
+export async function saveTemplate(id: string | null, _prev: DocFormState, fd: FormData): Promise<DocFormState> {
+  if (!(await staffOnly())) return { error: "No tienes permiso" };
+  if (id && !z.uuid().safeParse(id).success) return { error: "Plantilla no válida" };
+
+  const parsed = readTemplateForm(fd);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
+  const t = parsed.data;
+
   const supabase = await createClient();
-  const { data, error } = await supabase.from("document_templates").update(parsed.data).eq("id", id).select("id");
-  if (error || !data?.length) return { error: "No se pudo guardar la plantilla" };
-  redirect("/settings/templates");
+  const row = {
+    name: t.name,
+    description: t.description,
+    context: t.context,
+    body: t.body,
+    page_settings: t.page_settings,
+    is_default: false,
+    kind: "html" as const,
+  };
+
+  let savedId = id;
+  if (id) {
+    const { data, error } = await supabase.from("document_templates").update(row).eq("id", id).select("id");
+    if (error || !data?.length) return { error: "No se pudo guardar la plantilla" };
+  } else {
+    const { data, error } = await supabase.from("document_templates").insert(row).select("id").single();
+    if (error || !data) return { error: "No se pudo crear la plantilla" };
+    savedId = data.id;
+  }
+
+  if (t.is_default && savedId) {
+    await clearOtherDefaults(t.context, savedId);
+    await supabase.from("document_templates").update({ is_default: true }).eq("id", savedId);
+  }
+  redirect("/settings/templates?saved=1");
+}
+
+export async function setDefaultTemplate(id: string) {
+  if ((await staffOnly()) && z.uuid().safeParse(id).success) {
+    const supabase = await createClient();
+    const { data } = await supabase.from("document_templates").select("context").eq("id", id).maybeSingle();
+    if (data) {
+      await clearOtherDefaults(data.context, id);
+      await supabase.from("document_templates").update({ is_default: true }).eq("id", id);
+    }
+  }
+  redirect("/settings/templates?saved=1");
+}
+
+export async function duplicateTemplate(id: string) {
+  if ((await staffOnly()) && z.uuid().safeParse(id).success) {
+    const supabase = await createClient();
+    const { data } = await supabase.from("document_templates").select("*").eq("id", id).maybeSingle();
+    if (data) {
+      await supabase.from("document_templates").insert({
+        name: `${data.name} (copia)`,
+        description: data.description,
+        context: data.context,
+        body: data.body,
+        page_settings: data.page_settings,
+        kind: "html",
+        is_default: false,
+      });
+    }
+  }
+  redirect("/settings/templates?saved=1");
 }
 
 export async function deleteTemplate(id: string) {
-  const role = await getCurrentRole();
-  if (role && isStaffRole(role) && z.uuid().safeParse(id).success) {
+  if ((await staffOnly()) && z.uuid().safeParse(id).success) {
     const supabase = await createClient();
     await supabase.from("document_templates").delete().eq("id", id);
   }
   redirect("/settings/templates");
+}
+
+export async function createStarterTemplates() {
+  if (await staffOnly()) {
+    const supabase = await createClient();
+    const { data: existing } = await supabase.from("document_templates").select("name");
+    const have = new Set((existing ?? []).map((t) => t.name));
+    for (const t of STARTER_TEMPLATES.filter((x) => !have.has(x.name))) {
+      await supabase.from("document_templates").insert({ ...t, kind: "html" });
+    }
+  }
+  redirect("/settings/templates?saved=1");
 }

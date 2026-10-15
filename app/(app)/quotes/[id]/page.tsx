@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getCurrentRole } from "@/lib/modules/session";
 import { canWrite } from "@/lib/modules/nav";
 import { getQuote } from "@/lib/modules/opportunities/queries";
+import { listTemplates } from "@/lib/modules/documents/queries";
 import {
   addQuoteLine, deleteQuoteLine, generateQuoteDocument, setQuoteStatus, updateQuote, updateQuoteLine,
 } from "@/lib/modules/opportunities/actions";
@@ -23,7 +24,7 @@ const STATUS_STYLE: Record<QuoteStatus, string> = {
 export default async function QuotePage({ params, searchParams }: PageProps<"/quotes/[id]">) {
   const [{ id }, sp] = await Promise.all([params, searchParams]);
   if (!z.uuid().safeParse(id).success) notFound();
-  const [found, role] = await Promise.all([getQuote(id), getCurrentRole()]);
+  const [found, role, templates] = await Promise.all([getQuote(id), getCurrentRole(), listTemplates(["quote", "general"])]);
   if (!found) notFound();
 
   const { quote, contact, opportunity, lines } = found;
@@ -63,8 +64,14 @@ export default async function QuotePage({ params, searchParams }: PageProps<"/qu
                 </button>
               </form>
             ))}
-          <form action={generateQuoteDocument.bind(null, id)}>
-            <button type="submit" className="btn btn-primary btn-sm">Generar documento</button>
+          <form action={generateQuoteDocument.bind(null, id)} className="flex items-center gap-2">
+            {templates.length > 1 && (
+              <select name="template_id" aria-label="Plantilla" defaultValue={templates[0]?.id} className="input h-8 w-56 text-xs">
+                {templates.map((t) => (<option key={t.id} value={t.id}>{t.name}{t.is_default ? " (predeterminada)" : ""}</option>))}
+              </select>
+            )}
+            {templates.length === 1 && <input type="hidden" name="template_id" value={templates[0].id} />}
+            <button type="submit" className="btn btn-primary btn-sm">Generar PDF</button>
           </form>
         </div>
       )}

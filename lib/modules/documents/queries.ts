@@ -94,9 +94,11 @@ export async function getDocument(id: string) {
   };
 }
 
-export async function listTemplates(): Promise<Template[]> {
+export async function listTemplates(contexts?: Template["context"][]): Promise<Template[]> {
   const supabase = await createClient();
-  const { data } = await supabase.from("document_templates").select("*").order("name");
+  let q = supabase.from("document_templates").select("*").order("is_default", { ascending: false }).order("name");
+  if (contexts?.length) q = q.in("context", contexts);
+  const { data } = await q;
   return (data ?? []) as Template[];
 }
 

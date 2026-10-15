@@ -37,8 +37,8 @@ function eventText(e: CaseEvent, pipeline: PipelineStatus[], names: Map<string, 
   }
 }
 
-export default async function CasePage({ params }: PageProps<"/cases/[id]">) {
-  const { id } = await params;
+export default async function CasePage({ params, searchParams }: PageProps<"/cases/[id]">) {
+  const [{ id }, sp] = await Promise.all([params, searchParams]);
   if (!z.uuid().safeParse(id).success) notFound();
 
   const [found, role, tasks, minutesMap, thresholds, myEntries, caseExpenses] = await Promise.all([
@@ -88,6 +88,7 @@ export default async function CasePage({ params }: PageProps<"/cases/[id]">) {
         {writable && (
           <div className="flex items-center gap-3 text-sm">
             <Link href={`/cases/${c.id}/edit`} className="link">Editar</Link>
+            {(role === "owner" || role === "admin") && <Link href={`/settings/audit?entity=cases&id=${c.id}`} className="link">Historial de cambios</Link>}
             {c.archived ? (
               <form action={restoreCase.bind(null, c.id)}><button type="submit" className="link">Restaurar</button></form>
             ) : (
@@ -96,6 +97,8 @@ export default async function CasePage({ params }: PageProps<"/cases/[id]">) {
           </div>
         )}
       </div>
+
+      {typeof sp.error === "string" && <p role="alert" className="alert-error">{sp.error}</p>}
 
       {writable && !c.archived && (
         <form action={changeCaseStatus.bind(null, c.id)} className="flex items-end gap-2">

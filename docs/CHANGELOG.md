@@ -64,5 +64,12 @@
 - Integrado en rentabilidad (columna Gastos, margen) y en la ficha del expediente; exportación CSV para contabilidad.
 - Tarifas configurables en Ajustes. Migración `…1200_expenses`.
 
+### Plantillas PDF y registro de actividad
+- Editor visual de plantillas (negrita, títulos, listas, tablas, alineación) con datos insertables ({{contact.name}}, {{case.code}}, {{quote.total}}…), ajustes de página y plantilla predeterminada por uso.
+- Identidad de la empresa en Ajustes (logo, datos fiscales, color, pie) aplicada a todos los PDF.
+- PDF real de presupuestos y de cualquier plantilla (desde expedientes y contactos); se archivan en Documentos. Vista previa con datos de ejemplo. Tres plantillas de ejemplo.
+- Registro de actividad (Ajustes): filtros por elemento, acción, persona y fechas, con resumen de cambios; acceso directo desde expedientes y contactos.
+- Migración `…1300_template_branding`.
+
 ### Pendiente (siguiente)
 - Fusión de duplicados, relaciones entre contactos, CSV, filtros guardados, columnas configurables, compartir contactos desde la UI.

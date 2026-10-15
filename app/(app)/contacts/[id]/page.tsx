@@ -89,6 +89,7 @@ export default async function ContactPage({ params, searchParams }: PageProps<"/
         {writable && (
           <div className="flex items-center gap-3 text-sm">
             <Link href={`/contacts/${c.id}/edit`} className="link">Editar</Link>
+            {(role === "owner" || role === "admin") && <Link href={`/settings/audit?entity=contacts&id=${c.id}`} className="link">Historial de cambios</Link>}
             {c.archived ? (
               <form action={restoreContact.bind(null, c.id)}>
                 <button type="submit" className="link">Restaurar</button>
@@ -287,6 +288,8 @@ export default async function ContactPage({ params, searchParams }: PageProps<"/
           </ul>
         </section>
       )}
+
+      {tab === "documents" && typeof sp.error === "string" && <p role="alert" className="alert-error">{sp.error}</p>}
 
       {tab === "documents" && (
         <DocumentsSection contactId={c.id} back={`/contacts/${c.id}?tab=documents`} canWrite={writable} />

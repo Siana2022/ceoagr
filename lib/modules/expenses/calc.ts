@@ -28,7 +28,7 @@ export const round2 = (n: number) => Math.round(n * 100) / 100;
 export const lineTotal = (quantity: number, unit: number) => round2(quantity * unit);
 
 export function describeAmount(kind: ExpenseKind, quantity: number, unit: number) {
-  const eur = (n: number) => n.toLocaleString("es-ES", { style: "currency", currency: "EUR" });
+  const eur = (n: number) => n.toLocaleString("es-ES", { style: "currency", currency: "EUR", useGrouping: "always" } as Intl.NumberFormatOptions);
   if (kind === "kilometraje") return `${quantity.toLocaleString("es-ES")} km × ${eur(unit)}`;
   if (kind === "dieta") return `${quantity} día${quantity === 1 ? "" : "s"} × ${eur(unit)}`;
   return eur(unit);

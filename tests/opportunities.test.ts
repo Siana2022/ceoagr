@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { effectiveProbability, pipelineStats, quoteTotals } from "@/lib/modules/opportunities/calc";
 import { lostSchema, opportunityFormToInput, opportunitySchema, quoteLineSchema, quoteMetaSchema } from "@/lib/modules/opportunities/schema";
-import { renderQuoteHtml } from "@/lib/modules/opportunities/quote-html";
-import type { Quote } from "@/lib/modules/opportunities/types";
 
 describe("pipelineStats", () => {
   const items = [
@@ -68,20 +66,5 @@ describe("schemas", () => {
     expect(quoteMetaSchema.safeParse({ title: "P", tax_rate: "21", valid_until: "" }).success).toBe(true);
     expect(quoteMetaSchema.safeParse({ title: "P", tax_rate: "150" }).success).toBe(false);
     expect(lostSchema.safeParse({ lost_reason: "ok" }).success).toBe(false);
-  });
-});
-
-describe("renderQuoteHtml", () => {
-  const q = { id: "q", opportunity_id: null, contact_id: "c", number: "PRES-2026-0001", title: "Nave <script>", status: "draft", issue_date: "2026-10-13", valid_until: "2026-11-12", notes: "Pago 50%", tax_rate: 21, subtotal: 0, total: 0, total_hours: 0, owner_id: null } as Quote;
-  it("escapes content and shows totals", () => {
-    const html = renderQuoteHtml(q, [{ id: "l", quote_id: "q", position: 0, description: "<b>x</b>", hours: 10, quantity: 1, unit_price: 100, amount: 100 }], {
-      orgName: "AGR", client: { name: "Cliente & Co", tax_id: "B123" },
-    });
-    expect(html).toContain("PRES-2026-0001");
-    expect(html).toContain("Nave &lt;script&gt;");
-    expect(html).toContain("&lt;b&gt;x&lt;/b&gt;");
-    expect(html).not.toContain("<script>");
-    expect(html).toContain("Cliente &amp; Co");
-    expect(html).toMatch(/121,00/);
   });
 });

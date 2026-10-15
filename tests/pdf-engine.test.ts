@@ -14,7 +14,7 @@ const flatten = (c: unknown): string => {
 
 describe("htmlToPdfContent", () => {
   it("maps headings, paragraphs, emphasis and alignment", () => {
-    const c = htmlToPdfContent('<h1>Título</h1><p style="text-align: center">Hola <strong>mundo</strong> <em>cursiva</em></p>') as Record<string, unknown>[];
+    const c = htmlToPdfContent('<h1>Título</h1><p style="text-align: center">Hola <strong>mundo</strong> <em>cursiva</em></p>') as unknown as Record<string, unknown>[];
     expect(c[0]).toMatchObject({ bold: true, fontSize: 20 });
     expect(c[1]).toMatchObject({ alignment: "center" });
     const runs = c[1].text as { text: string; bold?: boolean; italics?: boolean }[];
@@ -23,13 +23,13 @@ describe("htmlToPdfContent", () => {
   });
 
   it("keeps empty paragraphs as blank lines and trims block edges", () => {
-    const c = htmlToPdfContent("<p></p><p>  espacio  </p>") as Record<string, unknown>[];
+    const c = htmlToPdfContent("<p></p><p>  espacio  </p>") as unknown as Record<string, unknown>[];
     expect(c[0].text).toBe(" ");
     expect(flatten(c[1].text)).toBe("espacio");
   });
 
   it("builds lists, including list items wrapped in paragraphs", () => {
-    const c = htmlToPdfContent("<ul><li><p>Uno</p></li><li><p>Dos</p></li></ul><ol><li>A</li></ol>") as Record<string, unknown>[];
+    const c = htmlToPdfContent("<ul><li><p>Uno</p></li><li><p>Dos</p></li></ul><ol><li>A</li></ol>") as unknown as Record<string, unknown>[];
     expect((c[0].ul as unknown[]).length).toBe(2);
     expect((c[1].ol as unknown[]).length).toBe(1);
   });
@@ -44,7 +44,7 @@ describe("htmlToPdfContent", () => {
   });
 
   it("only accepts embedded png/jpeg images", () => {
-    const ok = htmlToPdfContent('<img src="data:image/png;base64,iVBORw0KGgo=" width="100">') as Record<string, unknown>[];
+    const ok = htmlToPdfContent('<img src="data:image/png;base64,iVBORw0KGgo=" width="100">') as unknown as Record<string, unknown>[];
     expect(ok[0].image).toContain("data:image/png");
     expect(htmlToPdfContent('<img src="https://evil.example/x.png"><img src="data:image/svg+xml;base64,AAAA">')).toEqual([]);
   });
@@ -58,7 +58,7 @@ describe("htmlToPdfContent", () => {
   });
 
   it("supports page breaks and rejects odd colors", () => {
-    const c = htmlToPdfContent('<div data-page-break></div><p><span style="color: url(javascript:1)">a</span><span style="color:#ff0000">b</span></p>') as Record<string, unknown>[];
+    const c = htmlToPdfContent('<div data-page-break></div><p><span style="color: url(javascript:1)">a</span><span style="color:#ff0000">b</span></p>') as unknown as Record<string, unknown>[];
     expect(c[0]).toMatchObject({ pageBreak: "after" });
     const runs = c[1].text as { text: string; color?: string }[];
     expect(runs.find((r) => r.text === "a")?.color).toBeUndefined();

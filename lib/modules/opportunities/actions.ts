@@ -6,8 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentRole } from "@/lib/modules/session";
 import { canWrite, isStaffRole } from "@/lib/modules/nav";
 import { addDays, todayMadrid } from "@/lib/modules/format";
-import { storeFile } from "@/lib/modules/documents/storage";
-import { renderQuoteHtml } from "./quote-html";
+import { generatePdfDocument } from "@/lib/modules/documents/generate";
 import {
   lostSchema,
   opportunityFormToInput,
@@ -15,7 +14,6 @@ import {
   quoteLineSchema,
   quoteMetaSchema,
 } from "./schema";
-import { getQuote } from "./queries";
 import type { OppFormState } from "./types";
 
 function values(fd: FormData): Record<string, string> {
@@ -222,32 +220,26 @@ export async function deleteQuoteLine(quoteId: string, lineId: string) {
   redirect(`/quotes/${quoteId}`);
 }
 
-export async function generateQuoteDocument(id: string) {
+// Renders the quote as a PDF with the chosen (or default) quote template and files it as a document.
+export async function generateQuoteDocument(id: string, fd: FormData) {
   const role = await getCurrentRole();
   if (!isUuid(id) || !role || !canWrite(role)) redirect(`/quotes/${id}`);
-  const found = await getQuote(id);
-  if (!found || !found.contact) redirect("/opportunities");
 
   const supabase = await createClient();
-  const { data: org } = await supabase.from("organizations").select("name").maybeSingle();
-  const a = found.contact.address ?? {};
-  const html = renderQuoteHtml(found.quote, found.lines, {
-    orgName: org?.name ?? "",
-    client: {
-      name: found.contact.name,
-      tax_id: found.contact.tax_id,
-      email: found.contact.email,
-      address: [a.street, a.postal_code, a.city, a.province].filter(Boolean).join(", "),
-    },
-  });
+  let templateId = String(fd.get("template_id") ?? "");
+  if (!isUuid(templateId)) {
+    const { data } = await supabase
+      .from("document_templates")
+      .select("id, context, is_default")
+      .in("context", ["quote", "general"])
+      .order("is_default", { ascending: false })
+      .limit(1);
+    templateId = data?.[0]?.id ?? "";
+  }
+  if (!templateId) {
+    redirect(`/quotes/${id}?error=${encodeURIComponent("Crea primero una plantilla de presupuesto en Ajustes → Plantillas de documento")}`);
+  }
 
-  const name = `${found.quote.number} - ${found.quote.title}.html`;
-  const r = await storeFile({
-    file: new Blob([html], { type: "text/html" }),
-    fileName: name,
-    contentType: "text/html",
-    target: { caseId: found.opportunity?.case_id ?? null, contactId: found.opportunity?.case_id ? null : found.contact.id },
-    tags: ["presupuesto"],
-  });
-  redirect(r.id ? `/documents/${r.id}` : `/quotes/${id}?error=No se pudo generar el documento`);
+  const r = await generatePdfDocument({ templateId, quoteId: id });
+  redirect(r.documentId ? `/documents/${r.documentId}` : `/quotes/${id}?error=${encodeURIComponent(r.error ?? "No se pudo generar el PDF")}`);
 }

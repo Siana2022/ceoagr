@@ -146,20 +146,38 @@ function tableNode(el: Element, theme: PdfTheme): Content | null {
     : Array.from({ length: cols }, () => "*" as const);
   const headerRows = rows.filter((tr) => (tr.children as ChildNode[]).some((c) => isTag(c) && c.name.toLowerCase() === "th")).length;
 
-  return {
-    table: { headerRows: Math.min(headerRows, 1), widths, body },
-    layout: {
-      hLineWidth: () => 0.5,
-      vLineWidth: () => 0.5,
-      hLineColor: () => "#cbd5e1",
-      vLineColor: () => "#cbd5e1",
-      paddingLeft: () => 6,
-      paddingRight: () => 6,
-      paddingTop: () => 4,
-      paddingBottom: () => 4,
-    },
+  const totalsMode = el.attribs["data-borders"] === "totals";
+  const table = {
+    table: { headerRows: totalsMode ? 0 : Math.min(headerRows, 1), widths, body },
+    layout: totalsMode
+      ? {
+          hLineWidth: (i: number, node: { table: { body: unknown[] } }) => (i === node.table.body.length - 1 ? 0.8 : 0),
+          vLineWidth: () => 0,
+          hLineColor: () => "#94a3b8",
+          paddingLeft: () => 6,
+          paddingRight: () => 6,
+          paddingTop: () => 3,
+          paddingBottom: () => 3,
+        }
+      : {
+          hLineWidth: () => 0.5,
+          vLineWidth: () => 0.5,
+          hLineColor: () => "#cbd5e1",
+          vLineColor: () => "#cbd5e1",
+          paddingLeft: () => 6,
+          paddingRight: () => 6,
+          paddingTop: () => 4,
+          paddingBottom: () => 4,
+        },
     margin: [0, 2, 0, 10],
   } as Content;
+
+  // data-width pins the table to a fixed width, aligned to the right edge.
+  const fixed = Number.parseFloat(el.attribs["data-width"] ?? "");
+  if (Number.isFinite(fixed) && fixed > 0) {
+    return { columns: [{ width: "*", text: "" }, { width: Math.min(fixed, 515), ...(table as object) }], margin: [0, 2, 0, 10] } as Content;
+  }
+  return table;
 }
 
 function listNode(el: Element, theme: PdfTheme): Content | null {
