@@ -24,3 +24,8 @@
 | 2026-10-13 | Oportunidades con embudo fijo (consulta, estudio, presupuesto enviado, negociación, ganada, perdida); presupuestos con líneas y totales calculados en BBDD; "convertir en proyecto" copia horas y honorarios del presupuesto aceptado | Entrega 3. Presupuesto en HTML imprimible; PDF/DOCX siguen pendientes. |
 | 2026-10-13 | Control horario append-only: sin edición ni borrado (trigger + RLS); la hora la fija el servidor; correcciones = evento manual con motivo obligatorio, solo admin | Cumplimiento del registro de jornada y trazabilidad. |
 | 2026-10-13 | Cuadros de mando solo para owner/admin/manager; gráficos propios (CSS) sin librería | Evitar dependencias; los datos respetan RLS. |
+| 2026-10-15 | Fusión de contactos solo para owner/admin, vía RPC `merge_contacts` (atómica): reasigna todas las referencias, completa huecos del principal y archiva los duplicados (`merged_into`), nunca borra | Evitar pérdida de datos; trazable en `audit_log`. |
+| 2026-10-15 | Detección de duplicados por email, teléfono (sin prefijo +34) y NIF/CIF normalizados, agrupando de forma transitiva | Cálculo en servidor sobre los contactos visibles. Al crear un contacto se avisa si coincide email, NIF o teléfono exacto. |
+| 2026-10-15 | Importación CSV en dos pasos (vista previa y confirmación), máx. 2000 filas/5 MB, UTF-8; se revalida todo en el servidor al confirmar | No confiar en el cliente; omitir duplicados por defecto. |
+| 2026-10-15 | Vistas guardadas (`saved_views`): privadas por defecto; solo owner/admin/manager pueden compartirlas con el equipo | Spec 4.9. Guardan filtros y columnas. |
+| 2026-10-15 | Búsqueda global: consultas paralelas con la sesión del usuario (RLS decide lo visible); atajo «/» | Sin motor externo; índices trigram en títulos. |

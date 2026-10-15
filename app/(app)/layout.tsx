@@ -5,6 +5,7 @@ import { Bell, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { isStaffRole, NAV_ITEMS, ROLE_LABELS, type AppRole } from "@/lib/modules/nav";
 import { Brand } from "@/components/Brand";
+import { GlobalSearch } from "@/components/GlobalSearch";
 import { MobileNav } from "@/components/MobileNav";
 import { Sidebar } from "@/components/Sidebar";
 import { countUnreadNotifications } from "@/lib/modules/time/queries";
@@ -90,7 +91,12 @@ async function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <main className="min-w-0 flex-1">
-        <div className="mx-auto w-full max-w-7xl p-5 md:p-8">{children}</div>
+        <div className="mx-auto w-full max-w-7xl p-5 md:p-8">
+          <div className="mb-6 flex justify-end">
+            <GlobalSearch />
+          </div>
+          {children}
+        </div>
       </main>
     </div>
   );

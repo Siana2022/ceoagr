@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentRole } from "@/lib/modules/session";
-import { canWrite, isStaffRole } from "@/lib/modules/nav";
+import { canWrite, isAdminRole, isStaffRole } from "@/lib/modules/nav";
 import {
   buildContactSchema,
   CONFIGURABLE_FIELDS,
@@ -12,7 +12,7 @@ import {
   formValues,
   type ContactInput,
 } from "./schema";
-import { getRequiredFields } from "./queries";
+import { findSimilarContacts, getRequiredFields } from "./queries";
 import type { ContactFormState } from "./types";
 
 async function parse(fd: FormData): Promise<
@@ -51,6 +51,17 @@ export async function createContact(
 
   const result = await parse(fd);
   if (!result.ok) return result.state;
+
+  if (fd.get("force") !== "1") {
+    const similar = await findSimilarContacts(result.data);
+    if (similar.length) {
+      return {
+        error: "Ya existe un contacto con el mismo email, NIF o teléfono. Revísalo antes de crear un duplicado.",
+        duplicates: similar,
+        values: formValues(fd),
+      };
+    }
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -116,4 +127,70 @@ export async function saveRequiredFields(fd: FormData) {
   const supabase = await createClient();
   const { error } = await supabase.rpc("set_contact_required_fields", { p_fields: fields });
   redirect(error ? "/settings?error=1" : "/settings?saved=1");
+}
+
+export async function mergeContactsAction(fd: FormData) {
+  const role = await getCurrentRole();
+  if (!role || !isAdminRole(role)) redirect("/contacts");
+
+  const primary = String(fd.get("primary") ?? "");
+  const dups = fd.getAll("merge").map(String).filter((id) => id !== primary);
+  const ids = z.array(z.uuid()).safeParse([primary, ...dups]);
+  if (!ids.success || dups.length === 0) redirect("/contacts/duplicates?error=1");
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("merge_contacts", { p_primary: primary, p_duplicates: dups });
+  redirect(error ? "/contacts/duplicates?error=1" : `/contacts/duplicates?merged=${data ?? dups.length}`);
+}
+
+// ---------------------------------------------------------- relations & sharing
+
+export async function addRelation(contactId: string, fd: FormData) {
+  const back = `/contacts/${contactId}?tab=relations`;
+  const role = await getCurrentRole();
+  if (!role || !canWrite(role) || !z.uuid().safeParse(contactId).success) redirect("/contacts");
+
+  const custom = String(fd.get("custom_type") ?? "").trim();
+  const parsed = z
+    .object({
+      related: z.uuid(),
+      type: z.string().trim().min(1).max(60),
+    })
+    .safeParse({ related: fd.get("related"), type: custom || fd.get("type") });
+  if (!parsed.success || parsed.data.related === contactId) redirect(`${back}&error=1`);
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("contact_relations")
+    .insert({ contact_id: contactId, related_contact_id: parsed.data.related, relation_type: parsed.data.type });
+  redirect(error ? `${back}&error=1` : back);
+}
+
+export async function deleteRelation(contactId: string, relationId: string) {
+  if (z.uuid().safeParse(relationId).success) {
+    const supabase = await createClient();
+    await supabase.from("contact_relations").delete().eq("id", relationId);
+  }
+  redirect(`/contacts/${contactId}?tab=relations`);
+}
+
+export async function shareContact(contactId: string, fd: FormData) {
+  const parsed = z
+    .object({ user_id: z.uuid(), permission: z.enum(["view", "edit"]) })
+    .safeParse({ user_id: fd.get("user_id"), permission: fd.get("permission") });
+  if (z.uuid().safeParse(contactId).success && parsed.success) {
+    const supabase = await createClient();
+    await supabase
+      .from("record_shares")
+      .upsert({ entity: "contact", entity_id: contactId, ...parsed.data }, { onConflict: "entity,entity_id,user_id" });
+  }
+  redirect(`/contacts/${contactId}`);
+}
+
+export async function unshareContact(contactId: string, shareId: string) {
+  if (z.uuid().safeParse(shareId).success) {
+    const supabase = await createClient();
+    await supabase.from("record_shares").delete().eq("id", shareId);
+  }
+  redirect(`/contacts/${contactId}`);
 }

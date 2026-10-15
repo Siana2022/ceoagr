@@ -73,9 +73,16 @@ export function ContactForm({ action, required, contact, cancelHref, submitLabel
   return (
     <form action={formAction} className="card flex max-w-2xl flex-col gap-4 p-6">
       {state?.error && (
-        <p role="alert" className="alert-error">
-          {state.error}
-        </p>
+        <div role="alert" className="alert-error">
+          <p>{state.error}</p>
+          {state.duplicates && (
+            <ul className="mt-2 list-disc pl-5">
+              {state.duplicates.map((d) => (
+                <li key={d.id}><Link href={`/contacts/${d.id}`} className="font-semibold underline" target="_blank">{d.name}</Link></li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
 
       <label className="field">
@@ -117,6 +124,9 @@ export function ContactForm({ action, required, contact, cancelHref, submitLabel
             {pending ? "Guardando…" : submitLabel}
           </button>
         </div>
+        {state?.duplicates && (
+          <button type="submit" name="force" value="1" disabled={pending} className="btn btn-secondary">Crear de todos modos</button>
+        )}
         <Link href={cancelHref} className="link text-sm">
           Cancelar
         </Link>

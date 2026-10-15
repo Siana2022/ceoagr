@@ -43,5 +43,32 @@ export type ContactFormState =
       error?: string;
       fieldErrors?: Record<string, string>;
       values?: Record<string, string>;
+      duplicates?: { id: string; name: string }[];
+    }
+  | undefined;
+
+export type ImportPreviewRow = {
+  line: number;
+  name: string;
+  email: string;
+  tax_id: string;
+  phone: string;
+  status: "ok" | "error" | "duplicate";
+  messages: string[];
+};
+
+export type ImportState =
+  | {
+      error?: string;
+      preview?: {
+        total: number;
+        valid: number;
+        invalid: number;
+        duplicates: number;
+        unknownColumns: string[];
+        rows: ImportPreviewRow[];
+        payload: string; // validated rows (re-validated again on confirm)
+      };
+      result?: { inserted: number; skipped: number };
     }
   | undefined;

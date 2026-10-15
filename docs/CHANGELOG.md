@@ -44,5 +44,13 @@
 - Gestión de usuarios por el administrador; sin registro público.
 - Migraciones: `…0600_task_templates`, `…0610_visibility_by_assignment`, `…0700_time_tracking`, `…0800_opportunities`, `…0900_clock`.
 
-### Pendiente (entrega B de Contactos)
+### Contactos entrega B y búsqueda global
+- Fusión de duplicados (página «Duplicados», RPC `merge_contacts`) y aviso al crear un contacto repetido.
+- Importar contactos desde CSV (vista previa, errores por fila, omitir duplicados) y exportar CSV con los filtros activos; plantilla descargable.
+- Relaciones entre contactos (empleado de, socio de…) y compartir contactos desde la ficha.
+- Vistas guardadas (privadas o del equipo) y columnas configurables en la lista de contactos.
+- Búsqueda global (contactos, expedientes, oportunidades, presupuestos, tareas, documentos) con atajo «/».
+- Migración `…1000_contacts_extras`.
+
+### Pendiente (siguiente)
 - Fusión de duplicados, relaciones entre contactos, CSV, filtros guardados, columnas configurables, compartir contactos desde la UI.
