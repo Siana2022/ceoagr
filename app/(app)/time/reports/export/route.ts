@@ -31,11 +31,11 @@ export async function GET(req: Request) {
     header = ["Cliente", "Proyectos", "Horas", "Facturables", ...(money ? ["Coste", "Valor"] : [])];
     rows = r.byClient.map((c) => [c.name, c.cases, h(c.minutes), h(c.billable), ...(money ? [m(c.cost), m(c.value)] : [])]);
   } else {
-    header = ["Código", "Título", "Cliente", "Horas periodo", "Horas acumuladas", "Presupuesto h", "% consumido", ...(money ? ["Coste", "Honorarios", "Margen"] : [])];
+    header = ["Código", "Título", "Cliente", "Horas periodo", "Horas acumuladas", "Presupuesto h", "% consumido", ...(money ? ["Coste", "Gastos aprobados", "Gastos repercutibles", "Honorarios", "Margen"] : [])];
     rows = r.byCase.map((c) => [
       c.code, c.title, c.client, h(c.periodMinutes), h(c.totalMinutes), c.budgetHours ?? "",
       c.pct === null ? "" : Math.round(c.pct),
-      ...(money ? [m(c.cost), m(c.feeAmount), m(c.margin)] : []),
+      ...(money ? [m(c.cost), m(c.expenses), m(c.expensesBillable), m(c.feeAmount), m(c.margin)] : []),
     ]);
   }
 

@@ -7,6 +7,8 @@ import { getRequiredFields } from "@/lib/modules/contacts/queries";
 import { saveRequiredFields } from "@/lib/modules/contacts/actions";
 import { getAlertThresholds } from "@/lib/modules/time/queries";
 import { saveAlertThresholds } from "@/lib/modules/time/actions";
+import { getExpenseRates } from "@/lib/modules/expenses/queries";
+import { saveExpenseRates } from "@/lib/modules/expenses/actions";
 import { buttonClass } from "@/components/form-styles";
 
 export default async function SettingsPage({ searchParams }: PageProps<"/settings">) {
@@ -16,7 +18,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
   const { data: role } = await supabase.rpc("current_user_role");
   if (!role || !isStaffRole(role as AppRole)) redirect("/");
 
-  const [required, thresholds] = await Promise.all([getRequiredFields(), getAlertThresholds()]);
+  const [required, thresholds, rates] = await Promise.all([getRequiredFields(), getAlertThresholds(), getExpenseRates()]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -73,6 +75,21 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
           <button type="submit" className="btn btn-secondary">Guardar</button>
         </form>
       </section>
+
+      {(role === "owner" || role === "admin") && (
+        <section className="card flex max-w-2xl flex-col gap-3 p-6">
+          <h2 className="section-title">Tarifas de gastos</h2>
+          <p className="text-sm text-muted">
+            Importes por defecto de kilometraje y dietas. Los valores iniciales son los límites exentos de Hacienda: confírmalos con vuestro asesor. Un cambio solo afecta a los gastos nuevos.
+          </p>
+          <form action={saveExpenseRates} className="flex flex-wrap items-end gap-3">
+            <label className="field">€ por km<input name="km_rate" inputMode="decimal" defaultValue={String(rates.km_rate).replace(".", ",")} className="input w-28" /></label>
+            <label className="field">Dieta (€/día)<input name="dieta" inputMode="decimal" defaultValue={String(rates.dieta).replace(".", ",")} className="input w-28" /></label>
+            <label className="field">Dieta con pernocta<input name="dieta_overnight" inputMode="decimal" defaultValue={String(rates.dieta_overnight).replace(".", ",")} className="input w-32" /></label>
+            <button type="submit" className="btn btn-secondary">Guardar</button>
+          </form>
+        </section>
+      )}
 
       <section className="card flex max-w-2xl flex-col gap-3 p-6">
         <h2 className="section-title">Contactos: campos obligatorios</h2>

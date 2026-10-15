@@ -9,6 +9,7 @@ import { GlobalSearch } from "@/components/GlobalSearch";
 import { MobileNav } from "@/components/MobileNav";
 import { Sidebar } from "@/components/Sidebar";
 import { countUnreadNotifications } from "@/lib/modules/time/queries";
+import { countPendingApprovals } from "@/lib/modules/expenses/queries";
 import { logout } from "../(auth)/actions";
 
 function initials(name: string) {
@@ -36,7 +37,11 @@ async function AppShell({ children }: { children: React.ReactNode }) {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  const unread = await countUnreadNotifications();
+  const [unread, pendingExpenses] = await Promise.all([
+    countUnreadNotifications(),
+    isStaffRole(membership.role as AppRole) ? countPendingApprovals() : Promise.resolve(0),
+  ]);
+  const badges = { "/expenses": pendingExpenses };
   const role = membership.role as AppRole;
   const org = Array.isArray(membership.organizations)
     ? membership.organizations[0]
@@ -46,7 +51,7 @@ async function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-full flex-1 flex-col md:flex-row">
-      <MobileNav items={items} orgName={org?.name ?? ""} />
+      <MobileNav items={items} orgName={org?.name ?? ""} badges={badges} />
 
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-sidebar text-white md:flex">
         <div className="px-6 pb-6 pt-7">
@@ -55,7 +60,7 @@ async function AppShell({ children }: { children: React.ReactNode }) {
         <div className="px-6 pb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/40">
           {org?.name}
         </div>
-        <Sidebar items={items} />
+        <Sidebar items={items} badges={badges} />
 
         <div className="mt-auto border-t border-white/10 p-4">
           <div className="flex items-center gap-3">

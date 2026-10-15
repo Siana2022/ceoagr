@@ -12,6 +12,8 @@ import { DocumentsSection } from "@/components/documents/DocumentsSection";
 import { TaskTable } from "@/components/tasks/TaskTable";
 import { getAlertThresholds, getCaseMinutes, listEntries } from "@/lib/modules/time/queries";
 import { budgetStatus, formatHours, formatMinutes, formatMoney } from "@/lib/modules/time/calc";
+import { listExpenses } from "@/lib/modules/expenses/queries";
+import { KIND_LABELS, STATUS_LABELS, STATUS_STYLE } from "@/lib/modules/expenses/types";
 import { StatusBadge } from "@/components/cases/StatusBadge";
 import { inputClass } from "@/components/form-styles";
 
@@ -39,13 +41,14 @@ export default async function CasePage({ params }: PageProps<"/cases/[id]">) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 
-  const [found, role, tasks, minutesMap, thresholds, myEntries] = await Promise.all([
+  const [found, role, tasks, minutesMap, thresholds, myEntries, caseExpenses] = await Promise.all([
     getCase(id),
     getCurrentRole(),
     listTasks({ caseId: id, state: "all", limit: 50 }),
     getCaseMinutes([id]),
     getAlertThresholds(),
     listEntries({ caseId: id, fromIso: "2000-01-01T00:00:00Z", toIso: "2100-01-01T00:00:00Z", limit: 8 }),
+    listExpenses({ caseId: id, limit: 50 }),
   ]);
   if (!found) notFound();
   const { kase: c, contact, type, events, names } = found;
@@ -162,6 +165,27 @@ export default async function CasePage({ params }: PageProps<"/cases/[id]">) {
           </section>
         );
       })()}
+
+      {caseExpenses.rows.length > 0 && (
+        <section className="card flex flex-col gap-3 p-6">
+          <div className="flex items-center justify-between">
+            <h2 className="section-title">Gastos</h2>
+            <Link href="/expenses" className="link text-sm">Registrar gasto</Link>
+          </div>
+          <ul className="flex flex-col divide-y divide-slate-100 text-sm">
+            {caseExpenses.rows.map((e) => (
+              <li key={e.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <span>{KIND_LABELS[e.kind]}{e.description ? ` · ${e.description}` : ""} <span className="text-muted">({fmtDate(`${e.expense_date}T12:00:00Z`)}{caseExpenses.names.get(e.user_id) ? ` · ${caseExpenses.names.get(e.user_id)}` : ""})</span></span>
+                <span className="flex items-center gap-3">
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_STYLE[e.status]}`}>{STATUS_LABELS[e.status]}</span>
+                  <span className="w-24 text-right font-medium tabular-nums">{formatMoney(e.amount)}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-right text-sm font-semibold">Total aprobado: {formatMoney(caseExpenses.rows.filter((e) => e.status === "approved" || e.status === "reimbursed").reduce((s, e) => s + e.amount, 0))}</p>
+        </section>
+      )}
 
       <DocumentsSection caseId={c.id} back={`/cases/${c.id}`} canWrite={writable} />
 

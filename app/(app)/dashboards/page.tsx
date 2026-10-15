@@ -25,7 +25,8 @@ export default async function DashboardsPage({ searchParams }: PageProps<"/dashb
   const openCases = d.statusRows.reduce((s, r) => s + r.value, 0);
   const funnel = d.funnel;
   const profit = d.profitability;
-  const totalMargin = profit && profit.totals.fee !== null && profit.totals.cost !== null ? profit.totals.fee - profit.totals.cost : null;
+  const absorbed = profit ? profit.byCase.reduce((sum, c) => sum + (c.expenses - c.expensesBillable), 0) : 0;
+  const totalMargin = profit && profit.totals.fee !== null && profit.totals.cost !== null ? profit.totals.fee - profit.totals.cost - absorbed : null;
   const q = (over: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
     const merged: Record<string, string | undefined> = { period: periodKey, type: d.selectedTypeId ?? undefined, ...over };
@@ -156,7 +157,7 @@ export default async function DashboardsPage({ searchParams }: PageProps<"/dashb
               <div><dt className="text-muted">Coste de personal</dt><dd className="text-lg font-bold">{formatMoney(profit.totals.cost)}</dd></div>
               <div><dt className="text-muted">Valor de las horas</dt><dd className="text-lg font-bold">{formatMoney(profit.totals.value)}</dd></div>
               <div><dt className="text-muted">Honorarios (proyectos con horas)</dt><dd className="text-lg font-bold">{formatMoney(profit.totals.fee)}</dd></div>
-              <div><dt className="text-muted">Margen</dt><dd className={`text-lg font-bold ${totalMargin !== null && totalMargin < 0 ? "text-danger" : ""}`}>{formatMoney(totalMargin)}</dd></div>
+              <div><dt className="text-muted">Margen (tras gastos no repercutibles)</dt><dd className={`text-lg font-bold ${totalMargin !== null && totalMargin < 0 ? "text-danger" : ""}`}>{formatMoney(totalMargin)}</dd></div>
             </dl>
             <BarList
               rows={profit.byCase.filter((c) => c.margin !== null).sort((a, b) => (a.margin ?? 0) - (b.margin ?? 0)).slice(0, 5).map((c) => ({ key: c.caseId ?? c.code, label: `${c.code} · ${c.title}`, value: Math.abs(c.margin ?? 0), color: (c.margin ?? 0) < 0 ? "#dc2626" : "#15803d" }))}

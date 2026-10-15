@@ -58,5 +58,11 @@
 - Planificación (Gantt) por expediente con zoom por días o semanas, flechas de dependencia, línea de hoy y tareas sin fechas aparte.
 - Migración `…1100_task_dependencies`.
 
+### Gastos y partes de viaje
+- Registro de gastos con ticket, importe calculado (km × tarifa, días × dieta), repercutible al cliente y enlace a expediente.
+- Aprobación (responsables y administradores), rechazo con motivo, reenvío y reembolso; contador de pendientes en el menú.
+- Integrado en rentabilidad (columna Gastos, margen) y en la ficha del expediente; exportación CSV para contabilidad.
+- Tarifas configurables en Ajustes. Migración `…1200_expenses`.
+
 ### Pendiente (siguiente)
 - Fusión de duplicados, relaciones entre contactos, CSV, filtros guardados, columnas configurables, compartir contactos desde la UI.

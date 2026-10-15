@@ -5,7 +5,7 @@ import { Menu, X } from "lucide-react";
 import { Sidebar } from "@/components/Sidebar";
 import type { NavItem } from "@/lib/modules/nav";
 
-export function MobileNav({ items, orgName }: { items: NavItem[]; orgName: string }) {
+export function MobileNav({ items, orgName, badges }: { items: NavItem[]; orgName: string; badges?: Record<string, number> }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -25,7 +25,7 @@ export function MobileNav({ items, orgName }: { items: NavItem[]; orgName: strin
       </div>
       {open && (
         <div className="bg-sidebar pb-3">
-          <Sidebar items={items} onNavigate={() => setOpen(false)} />
+          <Sidebar items={items} badges={badges} onNavigate={() => setOpen(false)} />
         </div>
       )}
     </div>

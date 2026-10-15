@@ -10,6 +10,7 @@ import {
   Clock,
   FileText,
   LayoutDashboard,
+  Receipt,
   Settings,
   Timer,
   TrendingUp,
@@ -27,12 +28,13 @@ const ICONS: Record<string, LucideIcon> = {
   documents: FileText,
   time: Timer,
   clock: Clock,
+  expenses: Receipt,
   dashboards: BarChart3,
   opportunities: TrendingUp,
   settings: Settings,
 };
 
-export function Sidebar({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => void }) {
+export function Sidebar({ items, onNavigate, badges }: { items: NavItem[]; onNavigate?: () => void; badges?: Record<string, number> }) {
   const pathname = usePathname();
 
   return (
@@ -62,7 +64,12 @@ export function Sidebar({ items, onNavigate }: { items: NavItem[]; onNavigate?: 
             }`}
           >
             <Icon size={18} className={active ? "text-accent" : ""} />
-            {item.label}
+            <span className="flex-1">{item.label}</span>
+            {!!badges?.[item.href] && (
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[11px] font-bold text-sidebar">
+                {badges[item.href]}
+              </span>
+            )}
           </Link>
         );
       })}

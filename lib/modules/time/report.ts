@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { listMembers } from "@/lib/modules/members";
-import { budgetStatus, groupReport, margin, type BudgetLevel } from "./calc";
+import { budgetStatus, groupReport, type BudgetLevel } from "./calc";
+import { getExpenseReportRows } from "@/lib/modules/expenses/queries";
+import { projectMargin } from "@/lib/modules/expenses/calc";
 import { getAlertThresholds, getCaseMinutes, getReportRows } from "./queries";
 
 export type CaseReportRow = {
@@ -17,6 +19,8 @@ export type CaseReportRow = {
   level: BudgetLevel;
   cost: number | null;
   value: number | null;
+  expenses: number; // approved expenses in the period
+  expensesBillable: number; // of those, re-billed to the client
   margin: number | null;
 };
 
@@ -27,18 +31,25 @@ export type TimeReport = {
   byCase: CaseReportRow[];
   byClient: (GroupReportRow & { cases: number })[];
   byUser: GroupReportRow[];
-  totals: { minutes: number; billable: number; cost: number | null; value: number | null; fee: number | null };
+  totals: { minutes: number; billable: number; cost: number | null; value: number | null; fee: number | null; expenses: number };
 };
 
 export async function buildTimeReport(from: string, to: string): Promise<TimeReport> {
   const supabase = await createClient();
-  const [{ rows, error }, members, thresholds] = await Promise.all([
+  const [{ rows, error }, members, thresholds, expenseRows] = await Promise.all([
     getReportRows(from, to),
     listMembers(),
     getAlertThresholds(),
+    getExpenseReportRows(from, to),
   ]);
 
-  const caseIds = [...new Set(rows.map((r) => r.case_id).filter(Boolean))] as string[];
+  const expByCase = new Map<string, { approved: number; billable: number }>();
+  for (const e of expenseRows) {
+    if (!e.case_id) continue;
+    const cur = expByCase.get(e.case_id) ?? { approved: 0, billable: 0 };
+    expByCase.set(e.case_id, { approved: cur.approved + e.approved, billable: cur.billable + e.billable });
+  }
+  const caseIds = [...new Set([...rows.map((r) => r.case_id), ...expByCase.keys()].filter(Boolean))] as string[];
   const [{ data: cases }, totalMinutes] = await Promise.all([
     caseIds.length
       ? supabase
@@ -56,6 +67,9 @@ export async function buildTimeReport(from: string, to: string): Promise<TimeRep
   );
 
   const perCase = groupReport(rows, (r) => r.case_id);
+  for (const id of expByCase.keys()) {
+    if (!perCase.has(id)) perCase.set(id, { minutes: 0, billable: 0, cost: null, value: null });
+  }
   const warnAt = thresholds[0] ?? 80;
   const byCase: CaseReportRow[] = [...perCase.entries()].map(([id, t]) => {
     const c = id ? meta.get(id) : undefined;
@@ -63,6 +77,7 @@ export async function buildTimeReport(from: string, to: string): Promise<TimeRep
     const fee = c?.fee_amount != null ? Number(c.fee_amount) : null;
     const total = id ? (totalMinutes.get(id) ?? t.minutes) : t.minutes;
     const st = budgetStatus(total, budget, warnAt);
+    const exp = id ? (expByCase.get(id) ?? { approved: 0, billable: 0 }) : { approved: 0, billable: 0 };
     return {
       caseId: id,
       code: c?.code ?? "—",
@@ -77,7 +92,9 @@ export async function buildTimeReport(from: string, to: string): Promise<TimeRep
       level: st.level,
       cost: t.cost,
       value: t.value,
-      margin: margin(fee, t.cost),
+      expenses: exp.approved,
+      expensesBillable: exp.billable,
+      margin: projectMargin(fee, t.cost, exp.approved - exp.billable),
     };
   }).sort((a, b) => b.periodMinutes - a.periodMinutes);
 
@@ -114,6 +131,7 @@ export async function buildTimeReport(from: string, to: string): Promise<TimeRep
       cost: all?.cost ?? null,
       value: all?.value ?? null,
       fee: fees.length ? fees.reduce((s, v) => s + v, 0) : null,
+      expenses: byCase.reduce((sum, c) => sum + c.expenses, 0),
     },
   };
 }

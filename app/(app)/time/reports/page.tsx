@@ -35,6 +35,7 @@ export default async function ReportsPage({ searchParams }: PageProps<"/time/rep
       ? [
           { label: "Coste de personal", value: formatMoney(report.totals.cost) },
           { label: "Valor de las horas", value: formatMoney(report.totals.value) },
+          { label: "Gastos aprobados", value: formatMoney(report.totals.expenses) },
         ]
       : []),
   ];
@@ -79,7 +80,7 @@ export default async function ReportsPage({ searchParams }: PageProps<"/time/rep
             <thead>
               <tr>
                 <th>Proyecto</th><th>Cliente</th><th>Horas periodo</th><th>Acumulado / presupuesto</th>
-                {showMoney && (<><th>Coste</th><th>Honorarios</th><th>Margen</th></>)}
+                {showMoney && (<><th>Coste</th><th>Gastos</th><th>Honorarios</th><th>Margen</th></>)}
               </tr>
             </thead>
             <tbody>
@@ -107,13 +108,14 @@ export default async function ReportsPage({ searchParams }: PageProps<"/time/rep
                   {showMoney && (
                     <>
                       <td className="tabular-nums">{formatMoney(c.cost)}</td>
+                      <td className="tabular-nums">{formatMoney(c.expenses)}{c.expensesBillable > 0 && <span className="block text-xs text-muted">{formatMoney(c.expensesBillable)} repercutibles</span>}</td>
                       <td className="tabular-nums">{formatMoney(c.feeAmount)}</td>
                       <td className={`tabular-nums font-medium ${c.margin !== null && c.margin < 0 ? "text-danger" : ""}`}>{formatMoney(c.margin)}</td>
                     </>
                   )}
                 </tr>
               ))}
-              {report.byCase.length === 0 && <tr><td colSpan={7} className="py-10 text-center text-muted">No hay horas en este periodo.</td></tr>}
+              {report.byCase.length === 0 && <tr><td colSpan={8} className="py-10 text-center text-muted">No hay horas ni gastos en este periodo.</td></tr>}
             </tbody>
           </table>
         </div>
