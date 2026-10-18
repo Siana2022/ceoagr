@@ -63,6 +63,7 @@ export function buildContext(input: {
       email: b.email ?? "",
       web: b.web ?? "",
       logo: new Raw(b.logo_data ? `<img src="${b.logo_data}" width="140">` : ""),
+      logo_data: b.logo_data ?? "",
     },
     user: { name: input.user?.name ?? "", email: input.user?.email ?? "" },
     contact: {},

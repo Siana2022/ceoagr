@@ -66,7 +66,8 @@ export const VARIABLE_GROUPS: VarGroup[] = [
       { key: "org.phone", label: "Teléfono", sample: "960 090 483" },
       { key: "org.email", label: "Email", sample: "gerente@grupoagringenieria.com" },
       { key: "org.web", label: "Web", sample: "www.grupoagringenieria.com" },
-      { key: "org.logo", label: "Logotipo", sample: "(imagen)" },
+      { key: "org.logo", label: "Logotipo (tamaño fijo)", sample: "(imagen)" },
+      { key: "org.logo_data", label: "Logotipo (imagen, tamaño ajustable)", sample: "(imagen)" },
     ],
   },
   {
