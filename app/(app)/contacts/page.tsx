@@ -4,7 +4,7 @@ import { canWrite, isStaffRole } from "@/lib/modules/nav";
 import { listContacts, PAGE_SIZE, type ContactFilters } from "@/lib/modules/contacts/queries";
 import { CONTACT_KIND_LABELS, type ContactKind } from "@/lib/modules/contacts/types";
 import { listViews } from "@/lib/modules/views/queries";
-import { deleteView, saveView } from "@/lib/modules/views/actions";
+import { SavedViewsBar, SaveViewForm, ViewMessages } from "@/components/views/SavedViews";
 import { getUserId } from "@/lib/modules/tasks/queries";
 import { fmtDate } from "@/lib/modules/format";
 import { inputClass } from "@/components/form-styles";
@@ -55,11 +55,6 @@ export default async function ContactsPage({ searchParams }: PageProps<"/contact
   const href = (over: Record<string, string | undefined>) => `/contacts?${params(over)}`;
   const sortHref = (col: "name" | "created_at") =>
     href({ sort: col, dir: sort === col && dir === "asc" ? "desc" : "asc", page: "1" });
-  const viewHref = (v: (typeof views)[number]) => {
-    const p = new URLSearchParams(v.filters);
-    for (const c of v.columns) p.append("cols", c);
-    return `/contacts?${p.toString()}`;
-  };
 
   const writable = !!role && canWrite(role);
   const staff = !!role && isStaffRole(role);
@@ -80,26 +75,8 @@ export default async function ContactsPage({ searchParams }: PageProps<"/contact
         </div>
       </div>
 
-      {sp.view_saved && <p role="status" className="alert-ok">Vista guardada.</p>}
-      {sp.view_error && <p role="alert" className="alert-error">No se pudo guardar la vista.</p>}
-
-      {views.length > 0 && (
-        <ul className="flex flex-wrap items-center gap-2 text-sm" aria-label="Vistas guardadas">
-          <li className="text-muted">Vistas:</li>
-          {views.map((v) => (
-            <li key={v.id} className="flex items-center overflow-hidden rounded-full border border-slate-300 bg-white">
-              <Link href={viewHref(v)} className="px-3 py-1 font-medium hover:bg-slate-50">
-                {v.name}{v.is_shared && <span className="ml-1 text-xs font-normal text-muted">(equipo)</span>}
-              </Link>
-              {v.user_id === uid && (
-                <form action={deleteView.bind(null, "contacts", v.id)}>
-                  <button type="submit" aria-label={`Eliminar la vista ${v.name}`} className="border-l border-slate-200 px-2 py-1 text-muted hover:text-danger">×</button>
-                </form>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+      <ViewMessages saved={sp.view_saved} error={sp.view_error} />
+      <SavedViewsBar entity="contacts" basePath="/contacts" views={views} uid={uid} />
 
       <form method="get" role="search" className="card toolbar">
         <label className="field">
@@ -136,21 +113,13 @@ export default async function ContactsPage({ searchParams }: PageProps<"/contact
       </form>
 
       {writable && (
-        <details className="text-sm">
-          <summary className="link cursor-pointer">Guardar esta vista (filtros y columnas)</summary>
-          <form action={saveView.bind(null, "contacts")} className="card mt-3 flex max-w-xl flex-wrap items-end gap-3 p-4">
-            <input type="hidden" name="filters" value={JSON.stringify(currentFilters)} />
-            <input type="hidden" name="columns" value={JSON.stringify(rawCols.length ? cols : [])} />
-            <label className="field">
-              Nombre de la vista
-              <input name="name" required maxLength={60} className="input w-56" placeholder="Ej.: Empresas VIP" />
-            </label>
-            {staff && (
-              <label className="flex h-10 items-center gap-2"><input type="checkbox" name="is_shared" /> Compartir con el equipo</label>
-            )}
-            <button type="submit" className="btn btn-primary">Guardar vista</button>
-          </form>
-        </details>
+        <SaveViewForm
+          entity="contacts"
+          filters={currentFilters}
+          columns={rawCols.length ? cols : []}
+          canShare={staff}
+          placeholder="Ej.: Empresas VIP"
+        />
       )}
 
       {error && <p role="alert" className="alert-error">No se pudieron cargar los contactos.</p>}

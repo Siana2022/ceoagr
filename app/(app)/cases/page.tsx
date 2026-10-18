@@ -7,6 +7,10 @@ import { PRIORITY_LABELS, type Priority } from "@/lib/modules/cases/types";
 import { fmtDate } from "@/lib/modules/format";
 import { StatusBadge } from "@/components/cases/StatusBadge";
 import { inputClass } from "@/components/form-styles";
+import { getUserId } from "@/lib/modules/tasks/queries";
+import { listViews } from "@/lib/modules/views/queries";
+import { SavedViewsBar, SaveViewForm, ViewMessages } from "@/components/views/SavedViews";
+import { isStaffRole } from "@/lib/modules/nav";
 
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
@@ -24,12 +28,19 @@ export default async function CasesPage({ searchParams }: PageProps<"/cases">) {
   const page = Number.parseInt(first(sp.page) ?? "1", 10) || 1;
 
   const filters: CaseFilters = { q, typeId, status: board ? undefined : status || undefined, archived, sort, dir, page, all: board };
-  const [role, { rows, total, owners, error, page: current }] = await Promise.all([
+  const [role, uid, views, { rows, total, owners, error, page: current }] = await Promise.all([
     getCurrentRole(),
+    getUserId(),
+    listViews("cases"),
     listCases(filters),
   ]);
   const typeById = new Map(types.map((t) => [t.id, t]));
   const selectedType = typeId ? typeById.get(typeId) : undefined;
+  const writable = !!role && canWrite(role);
+  const staff = !!role && isStaffRole(role);
+  const currentFilters = Object.fromEntries(
+    Object.entries({ q, type: typeId, status, archived: archived ? "1" : undefined, sort, dir }).filter(([, v]) => v),
+  );
 
   const href = (over: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
@@ -61,6 +72,13 @@ export default async function CasesPage({ searchParams }: PageProps<"/cases">) {
         </div>
       </div>
 
+      {!board && (
+        <>
+          <ViewMessages saved={sp.view_saved} error={sp.view_error} />
+          <SavedViewsBar entity="cases" basePath="/cases" views={views} uid={uid} />
+        </>
+      )}
+
       <form method="get" role="search" className="card toolbar">
         {board && <input type="hidden" name="view" value="board" />}
         <label className="field">
@@ -89,6 +107,10 @@ export default async function CasesPage({ searchParams }: PageProps<"/cases">) {
         </label>
         <button type="submit" className="btn btn-secondary">Filtrar</button>
       </form>
+
+      {!board && writable && (
+        <SaveViewForm entity="cases" filters={currentFilters} canShare={staff} placeholder="Ej.: Urgentes de este mes" />
+      )}
 
       {error && <p role="alert" className="alert-error">No se pudieron cargar los expedientes.</p>}
 

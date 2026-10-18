@@ -78,5 +78,9 @@
 - Se retira el editor de texto enriquecido (TipTap); misma salida en PDF, sin cambios en el motor de render.
 - Migración `…1800000100_template_blocks` (columna `blocks` en `document_templates`).
 
+### Vistas guardadas en expedientes, tareas y oportunidades
+- Mismo mecanismo de contactos (vistas privadas o compartidas con el equipo) ahora también en la lista de expedientes (vista tabla), tareas (vista lista) y oportunidades.
+- Componente compartido `components/views/SavedViews.tsx` reutilizado por las cuatro listas.
+
 ### Pendiente (siguiente)
 - Fusión de duplicados, relaciones entre contactos, CSV, filtros guardados, columnas configurables, compartir contactos desde la UI.

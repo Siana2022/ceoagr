@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { getCurrentRole } from "@/lib/modules/session";
-import { canWrite } from "@/lib/modules/nav";
-import { getBlockedTaskIds, listTasks, TASKS_PAGE_SIZE } from "@/lib/modules/tasks/queries";
+import { canWrite, isStaffRole } from "@/lib/modules/nav";
+import { getBlockedTaskIds, getUserId, listTasks, TASKS_PAGE_SIZE } from "@/lib/modules/tasks/queries";
+import { listViews } from "@/lib/modules/views/queries";
+import { SavedViewsBar, SaveViewForm, ViewMessages } from "@/components/views/SavedViews";
 import { TaskTable } from "@/components/tasks/TaskTable";
 import { TaskBoard, type BoardCard } from "@/components/tasks/TaskBoard";
 import { inputClass } from "@/components/form-styles";
@@ -18,8 +20,12 @@ export default async function TasksPage({ searchParams }: PageProps<"/tasks">) {
   const q = first(sp.q) ?? "";
   const page = Number.parseInt(first(sp.page) ?? "1", 10) || 1;
 
-  const role = await getCurrentRole();
+  const [role, uid, views] = await Promise.all([getCurrentRole(), getUserId(), listViews("tasks")]);
   const writable = !!role && canWrite(role);
+  const staff = !!role && isStaffRole(role);
+  const currentFilters = Object.fromEntries(
+    Object.entries({ scope, state, q }).filter(([, v]) => v),
+  );
 
   const params = (over: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
@@ -78,6 +84,13 @@ export default async function TasksPage({ searchParams }: PageProps<"/tasks">) {
         </div>
       </div>
 
+      {!board && (
+        <>
+          <ViewMessages saved={sp.view_saved} error={sp.view_error} />
+          <SavedViewsBar entity="tasks" basePath="/tasks" views={views} uid={uid} />
+        </>
+      )}
+
       <form method="get" role="search" className="card toolbar">
         <input type="hidden" name="scope" value={scope} />
         {board && <input type="hidden" name="view" value="board" />}
@@ -97,6 +110,10 @@ export default async function TasksPage({ searchParams }: PageProps<"/tasks">) {
         )}
         <button type="submit" className="btn btn-secondary">Filtrar</button>
       </form>
+
+      {!board && writable && (
+        <SaveViewForm entity="tasks" filters={currentFilters} canShare={staff} placeholder="Ej.: Pendientes de esta semana" />
+      )}
 
       {list?.error && <p role="alert" className="alert-error">No se pudieron cargar las tareas.</p>}
 

@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { getCurrentRole } from "@/lib/modules/session";
-import { canWrite } from "@/lib/modules/nav";
+import { canWrite, isStaffRole } from "@/lib/modules/nav";
+import { getUserId } from "@/lib/modules/tasks/queries";
+import { listViews } from "@/lib/modules/views/queries";
+import { SavedViewsBar, SaveViewForm, ViewMessages } from "@/components/views/SavedViews";
 import { listOpportunities } from "@/lib/modules/opportunities/queries";
 import { changeStage } from "@/lib/modules/opportunities/actions";
 import { pipelineStats, stageInfo } from "@/lib/modules/opportunities/calc";
@@ -18,10 +21,19 @@ export default async function OpportunitiesPage({ searchParams }: PageProps<"/op
   const archived = first(sp.archived) === "1";
   const showClosed = first(sp.closed) === "1";
 
-  const [role, { rows, owners, error }] = await Promise.all([getCurrentRole(), listOpportunities({ q, archived })]);
+  const [role, uid, views, { rows, owners, error }] = await Promise.all([
+    getCurrentRole(),
+    getUserId(),
+    listViews("opportunities"),
+    listOpportunities({ q, archived }),
+  ]);
   const writable = !!role && canWrite(role);
+  const staff = !!role && isStaffRole(role);
   const stats = pipelineStats(rows);
   const stages = STAGES.filter((s) => showClosed || OPEN_STAGES.includes(s.key));
+  const currentFilters = Object.fromEntries(
+    Object.entries({ q, closed: showClosed ? "1" : undefined, archived: archived ? "1" : undefined }).filter(([, v]) => v),
+  );
 
   const href = (over: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
@@ -62,6 +74,9 @@ export default async function OpportunitiesPage({ searchParams }: PageProps<"/op
         ))}
       </ul>
 
+      <ViewMessages saved={sp.view_saved} error={sp.view_error} />
+      <SavedViewsBar entity="opportunities" basePath="/opportunities" views={views} uid={uid} />
+
       <form method="get" role="search" className="card toolbar">
         {table && <input type="hidden" name="view" value="table" />}
         <label className="field">
@@ -72,6 +87,10 @@ export default async function OpportunitiesPage({ searchParams }: PageProps<"/op
         <label className="flex h-10 items-center gap-2 text-sm"><input type="checkbox" name="archived" value="1" defaultChecked={archived} /> Ver archivadas</label>
         <button type="submit" className="btn btn-secondary">Filtrar</button>
       </form>
+
+      {writable && (
+        <SaveViewForm entity="opportunities" filters={currentFilters} canShare={staff} placeholder="Ej.: Oportunidades calientes" />
+      )}
 
       {error && <p role="alert" className="alert-error">No se pudieron cargar las oportunidades. ¿Está aplicada la migración?</p>}
 
