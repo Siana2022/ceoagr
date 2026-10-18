@@ -5,6 +5,8 @@ import {
   compileBlock,
   compileBlocks,
   defaultBlock,
+  insertBlockAt,
+  moveBlockTo,
   normalizeTableRows,
   type Block,
 } from "@/lib/modules/documents/blocks";
@@ -100,6 +102,33 @@ describe("blocksFromLegacyHtml", () => {
     expect(blocksFromLegacyHtml("")).toEqual([]);
     expect(blocksFromLegacyHtml("   ")).toEqual([]);
     expect(blocksFromLegacyHtml("<p></p>")).toEqual([]);
+  });
+});
+
+describe("drag-and-drop reordering", () => {
+  const list = (ids: string) => ids.split("").map((id) => ({ id, type: "divider" }) as Block);
+
+  it("inserts a brand-new block at the drop index", () => {
+    const result = insertBlockAt(list("abc"), 1, { id: "n", type: "divider" });
+    expect(result.map((b) => b.id)).toEqual(["a", "n", "b", "c"]);
+  });
+  it("inserts at the start and past the end without throwing", () => {
+    expect(insertBlockAt(list("ab"), 0, { id: "n", type: "divider" }).map((b) => b.id)).toEqual(["n", "a", "b"]);
+    expect(insertBlockAt(list("ab"), 99, { id: "n", type: "divider" }).map((b) => b.id)).toEqual(["a", "b", "n"]);
+  });
+
+  it("moves a block forward to land right before the drop point", () => {
+    // Dragging "a" to index 2 (between b and c) should end up between them.
+    expect(moveBlockTo(list("abc"), "a", 2).map((b) => b.id)).toEqual(["b", "a", "c"]);
+  });
+  it("moves a block backward to the exact drop point", () => {
+    expect(moveBlockTo(list("abc"), "c", 0).map((b) => b.id)).toEqual(["c", "a", "b"]);
+  });
+  it("dropping a block back onto its own slot is a no-op", () => {
+    expect(moveBlockTo(list("abc"), "b", 1).map((b) => b.id)).toEqual(["a", "b", "c"]);
+  });
+  it("ignores a drag of an id that no longer exists", () => {
+    expect(moveBlockTo(list("abc"), "zzz", 1).map((b) => b.id)).toEqual(["a", "b", "c"]);
   });
 });
 

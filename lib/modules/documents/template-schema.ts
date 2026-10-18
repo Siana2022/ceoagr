@@ -8,6 +8,15 @@ export const templateFormSchema = z.object({
   description: z.preprocess(emptyToNull, z.string().trim().max(300).nullish()).transform((v) => v ?? null),
   context: z.enum(["general", "contact", "case", "quote"]),
   body: z.string().max(200_000, "La plantilla es demasiado larga"),
+  blocks: z.preprocess((v) => {
+    if (typeof v !== "string" || v.trim() === "") return [];
+    try {
+      const parsed = JSON.parse(v);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }, z.array(z.record(z.string(), z.unknown())).max(200, "Demasiados bloques")),
   is_default: z.boolean(),
   page_settings: z.object({
     orientation: z.enum(["portrait", "landscape"]),
@@ -29,6 +38,7 @@ export function readTemplateForm(fd: FormData) {
     description: g("description"),
     context: g("context") || "general",
     body: g("body"),
+    blocks: g("blocks_json"),
     is_default: fd.get("is_default") === "on",
     page_settings: {
       orientation: g("orientation") === "landscape" ? "landscape" : "portrait",

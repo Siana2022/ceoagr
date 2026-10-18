@@ -3,9 +3,17 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { saveTemplate } from "@/lib/modules/documents/actions";
+import { blocksFromLegacyHtml, type Block } from "@/lib/modules/documents/blocks";
 import { CONTEXT_LABELS, type TemplateContextKind } from "@/lib/modules/documents/variables";
 import type { DocFormState, Template } from "@/lib/modules/documents/types";
-import { TemplateEditor } from "./TemplateEditor";
+import { BlockEditor } from "./BlockEditor";
+
+function initialBlocksFor(template?: Template): Block[] {
+  if (template?.blocks && Array.isArray(template.blocks) && template.blocks.length > 0) {
+    return template.blocks as Block[];
+  }
+  return template ? blocksFromLegacyHtml(template.body) : [];
+}
 
 export function TemplateForm({ template }: { template?: Template }) {
   const [state, formAction, pending] = useActionState<DocFormState, FormData>(saveTemplate.bind(null, template?.id ?? null), undefined);
@@ -39,7 +47,7 @@ export function TemplateForm({ template }: { template?: Template }) {
 
       <section className="flex flex-col gap-3">
         <h2 className="section-title">Contenido</h2>
-        <TemplateEditor name="body" initialHtml={template?.body ?? "<p></p>"} context={context} />
+        <BlockEditor bodyName="body" blocksName="blocks_json" initialBlocks={initialBlocksFor(template)} context={context} />
       </section>
 
       <section className="card grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-4">

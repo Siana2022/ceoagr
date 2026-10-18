@@ -22,6 +22,7 @@ export type Template = {
   body: string;
   context: "general" | "contact" | "case" | "quote";
   page_settings: { orientation?: "portrait" | "landscape"; margin_mm?: number; header_logo?: boolean; page_numbers?: boolean; footer_text?: string };
+  blocks: unknown[] | null;
   is_default: boolean;
   case_type_id: string | null;
   created_at: string;

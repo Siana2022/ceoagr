@@ -134,6 +134,25 @@ export function blocksFromLegacyHtml(html: string): Block[] {
   return [{ id: newId(), type: "html", html }];
 }
 
+// Pure reordering math shared by drag-and-drop (new or existing block dropped
+// at `dropIndex`, an index into the ORIGINAL list) and used by the editor.
+export function insertBlockAt(blocks: Block[], dropIndex: number, insert: Block): Block[] {
+  const i = Math.max(0, Math.min(dropIndex, blocks.length));
+  return [...blocks.slice(0, i), insert, ...blocks.slice(i)];
+}
+
+export function moveBlockTo(blocks: Block[], id: string, dropIndex: number): Block[] {
+  const from = blocks.findIndex((b) => b.id === id);
+  if (from === -1) return blocks;
+  const item = blocks[from];
+  const without = blocks.filter((b) => b.id !== id);
+  // Dropping after the item's own original slot should land it right where it
+  // was conceptually aimed, accounting for the hole left by removing it first.
+  const target = from < dropIndex ? dropIndex - 1 : dropIndex;
+  const clamped = Math.max(0, Math.min(target, without.length));
+  return [...without.slice(0, clamped), item, ...without.slice(clamped)];
+}
+
 export function normalizeTableRows(rows: string[][]): string[][] {
   const cols = Math.max(1, ...rows.map((r) => r.length));
   return rows.map((r) => Array.from({ length: cols }, (_, i) => r[i] ?? ""));

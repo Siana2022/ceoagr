@@ -10,7 +10,7 @@ import { parseTags, safeFileName, storeFile } from "./storage";
 import { BLOCKED_EXTENSIONS, MAX_FILE_BYTES, type DocFormState } from "./types";
 import { generatePdfDocument } from "./generate";
 import { readTemplateForm } from "./template-schema";
-import { STARTER_TEMPLATES } from "./starters";
+import { STARTER_TEMPLATES, starterBody } from "./starters";
 
 const uuidOrNull = (v: FormDataEntryValue | null) => {
   const s = typeof v === "string" ? v : "";
@@ -134,6 +134,7 @@ export async function saveTemplate(id: string | null, _prev: DocFormState, fd: F
     description: t.description,
     context: t.context,
     body: t.body,
+    blocks: t.blocks,
     page_settings: t.page_settings,
     is_default: false,
     kind: "html" as const,
@@ -178,6 +179,7 @@ export async function duplicateTemplate(id: string) {
         description: data.description,
         context: data.context,
         body: data.body,
+        blocks: data.blocks,
         page_settings: data.page_settings,
         kind: "html",
         is_default: false,
@@ -201,7 +203,7 @@ export async function createStarterTemplates() {
     const { data: existing } = await supabase.from("document_templates").select("name");
     const have = new Set((existing ?? []).map((t) => t.name));
     for (const t of STARTER_TEMPLATES.filter((x) => !have.has(x.name))) {
-      await supabase.from("document_templates").insert({ ...t, kind: "html" });
+      await supabase.from("document_templates").insert({ ...t, body: starterBody(t), kind: "html" });
     }
   }
   redirect("/settings/templates?saved=1");

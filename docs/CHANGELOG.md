@@ -71,5 +71,12 @@
 - Registro de actividad (Ajustes): filtros por elemento, acción, persona y fechas, con resumen de cambios; acceso directo desde expedientes y contactos.
 - Migración `…1300_template_branding`.
 
+### Constructor de plantillas por bloques (sustituye al editor tipo Word)
+- Nuevo editor de plantillas: paleta de bloques (título, texto, imagen/logotipo, tabla, tabla de líneas y de totales del presupuesto, separador, espacio) que se arrastran y sueltan sobre el documento, con reordenación por arrastre y por botones.
+- Cada bloque de texto tiene su propio selector "Insertar dato" que añade la variable en el punto del cursor.
+- Las plantillas existentes se migran automáticamente a un bloque "HTML avanzado" editable, sin perder contenido.
+- Se retira el editor de texto enriquecido (TipTap); misma salida en PDF, sin cambios en el motor de render.
+- Migración `…1800000100_template_blocks` (columna `blocks` en `document_templates`).
+
 ### Pendiente (siguiente)
 - Fusión de duplicados, relaciones entre contactos, CSV, filtros guardados, columnas configurables, compartir contactos desde la UI.

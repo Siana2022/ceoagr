@@ -1,4 +1,5 @@
 import type { PageSettings } from "@/lib/modules/pdf/engine";
+import { compileBlocks, newId, type Block } from "./blocks";
 import type { TemplateContextKind } from "./variables";
 
 export type StarterTemplate = {
@@ -7,7 +8,63 @@ export type StarterTemplate = {
   context: TemplateContextKind;
   is_default: boolean;
   page_settings: PageSettings;
-  body: string;
+  blocks: Block[];
+};
+
+const h = (level: 1 | 2 | 3, text: string): Block => ({ id: newId(), type: "heading", level, text, align: "left" });
+const p = (text: string, opts: Partial<Omit<Extract<Block, { type: "text" }>, "id" | "type">> = {}): Block => ({
+  id: newId(),
+  type: "text",
+  text,
+  align: "left",
+  bold: false,
+  italic: false,
+  ...opts,
+});
+
+export const STARTER_BLOCKS: Record<string, Block[]> = {
+  "Presupuesto estándar": [
+    h(1, "Presupuesto {{quote.number}}"),
+    p("Fecha: {{quote.issue_date}} · Válido hasta: {{quote.valid_until}}", { bold: true }),
+    h(3, "Cliente"),
+    p("{{contact.name}}\nNIF/CIF: {{contact.tax_id}}\n{{contact.address}}"),
+    h(2, "{{quote.title}}"),
+    { id: newId(), type: "quote_lines" },
+    { id: newId(), type: "quote_totals" },
+    h(3, "Condiciones y notas"),
+    p("{{quote.notes}}"),
+    { id: newId(), type: "spacer", height: 24 },
+    p("Atentamente,\n{{user.name}}\n{{org.name}}"),
+  ],
+  "Carta al cliente": [
+    p("Valencia, {{today}}", { align: "right" }),
+    p("{{contact.name}}\n{{contact.address}}"),
+    { id: newId(), type: "spacer", height: 16 },
+    p("Estimado/a cliente:"),
+    p("Escribe aquí el contenido de la carta."),
+    { id: newId(), type: "spacer", height: 16 },
+    p("Un cordial saludo,"),
+    p("{{user.name}}\n{{org.name}}"),
+  ],
+  "Informe de expediente": [
+    h(1, "Informe del expediente {{case.code}}"),
+    h(2, "{{case.title}}"),
+    {
+      id: newId(),
+      type: "table",
+      header: false,
+      rows: [
+        ["Cliente", "{{contact.name}}"],
+        ["Estado", "{{case.status}}"],
+        ["Apertura", "{{case.opened_at}}"],
+        ["Fecha límite", "{{case.due_at}}"],
+      ],
+    },
+    h(3, "Resumen"),
+    p("Describe aquí el estado del trabajo."),
+    { id: newId(), type: "spacer", height: 16 },
+    p("{{user.name}} · {{org.name}} · {{today}}"),
+  ],
 };
 
 export const STARTER_TEMPLATES: StarterTemplate[] = [
@@ -17,17 +74,7 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
     context: "quote",
     is_default: true,
     page_settings: { header_logo: true, page_numbers: true },
-    body: `<h1>Presupuesto {{quote.number}}</h1>
-<p><strong>Fecha:</strong> {{quote.issue_date}} · <strong>Válido hasta:</strong> {{quote.valid_until}}</p>
-<h3>Cliente</h3>
-<p>{{contact.name}}<br>NIF/CIF: {{contact.tax_id}}<br>{{contact.address}}</p>
-<h2>{{quote.title}}</h2>
-<p>{{quote.lines_table}}</p>
-<p>{{quote.totals_table}}</p>
-<h3>Condiciones y notas</h3>
-<p>{{quote.notes}}</p>
-<p></p>
-<p>Atentamente,<br>{{user.name}}<br>{{org.name}}</p>`,
+    blocks: STARTER_BLOCKS["Presupuesto estándar"],
   },
   {
     name: "Carta al cliente",
@@ -35,14 +82,7 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
     context: "contact",
     is_default: true,
     page_settings: { header_logo: true, page_numbers: false },
-    body: `<p style="text-align: right">Valencia, {{today}}</p>
-<p>{{contact.name}}<br>{{contact.address}}</p>
-<p></p>
-<p>Estimado/a cliente:</p>
-<p>Escribe aquí el contenido de la carta.</p>
-<p></p>
-<p>Un cordial saludo,</p>
-<p>{{user.name}}<br>{{org.name}}</p>`,
+    blocks: STARTER_BLOCKS["Carta al cliente"],
   },
   {
     name: "Informe de expediente",
@@ -50,17 +90,10 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
     context: "case",
     is_default: true,
     page_settings: { header_logo: true, page_numbers: true },
-    body: `<h1>Informe del expediente {{case.code}}</h1>
-<h2>{{case.title}}</h2>
-<table data-widths="140,*"><tbody>
-<tr><td><strong>Cliente</strong></td><td>{{contact.name}}</td></tr>
-<tr><td><strong>Estado</strong></td><td>{{case.status}}</td></tr>
-<tr><td><strong>Apertura</strong></td><td>{{case.opened_at}}</td></tr>
-<tr><td><strong>Fecha límite</strong></td><td>{{case.due_at}}</td></tr>
-</tbody></table>
-<h3>Resumen</h3>
-<p>Describe aquí el estado del trabajo.</p>
-<p></p>
-<p>{{user.name}} · {{org.name}} · {{today}}</p>`,
+    blocks: STARTER_BLOCKS["Informe de expediente"],
   },
 ];
+
+export function starterBody(t: StarterTemplate) {
+  return compileBlocks(t.blocks);
+}

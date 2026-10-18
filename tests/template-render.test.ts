@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Raw, chipifyVariables, renderTemplate } from "@/lib/modules/documents/render";
 import { buildContext, quoteLinesHtml, sampleContext } from "@/lib/modules/documents/context";
-import { STARTER_TEMPLATES } from "@/lib/modules/documents/starters";
+import { STARTER_TEMPLATES, starterBody } from "@/lib/modules/documents/starters";
 import { allVariableKeys, groupsFor } from "@/lib/modules/documents/variables";
 
 describe("renderTemplate", () => {
@@ -60,9 +60,10 @@ describe("template contexts", () => {
     const known = new Set(allVariableKeys());
     const ctx = sampleContext({ name: "AGR" }, "15/10/2026");
     for (const t of STARTER_TEMPLATES) {
-      const used = [...t.body.matchAll(/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/g)].map((m) => m[1]);
+      const body = starterBody(t);
+      const used = [...body.matchAll(/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/g)].map((m) => m[1]);
       expect(used.filter((k) => !known.has(k)), t.name).toEqual([]);
-      expect(renderTemplate(t.body, ctx).unknown, t.name).toEqual([]);
+      expect(renderTemplate(body, ctx).unknown, t.name).toEqual([]);
     }
   });
 
