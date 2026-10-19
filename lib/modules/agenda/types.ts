@@ -12,7 +12,28 @@ export type Resource = {
   kind: ResourceKind;
   color: string;
   active: boolean;
+  public_booking: boolean;
+  slot_minutes: number;
 };
+
+export type AvailabilityRule = {
+  id: string;
+  resource_id: string;
+  weekday: number; // 0 = Sunday … 6 = Saturday
+  start_time: string; // "HH:MM" or "HH:MM:SS"
+  end_time: string;
+  valid_from: string | null;
+  valid_to: string | null;
+};
+
+export type AvailabilityException = {
+  id: string;
+  resource_id: string;
+  date: string;
+  reason: string | null;
+};
+
+export const WEEKDAY_LABELS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
 export type AppointmentStatus = "pending" | "confirmed" | "cancelled" | "no_show";
 

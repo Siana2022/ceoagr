@@ -64,4 +64,16 @@ export const resourceSchema = z.object({
   name: z.string().trim().min(1, "Indica el nombre").max(80),
   kind: z.enum(["professional", "room", "equipment"]),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Color no válido"),
+  slot_minutes: z.preprocess((v) => Number(v), z.number().int().min(5).max(480)),
+});
+
+export const availabilityRuleSchema = z.object({
+  weekday: z.preprocess((v) => Number(v), z.number().int().min(0).max(6)),
+  start_time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Hora no válida"),
+  end_time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Hora no válida"),
+}).refine((d) => d.end_time > d.start_time, { message: "La hora de fin debe ser posterior al inicio", path: ["end_time"] });
+
+export const availabilityExceptionSchema = z.object({
+  date: z.string().refine(isDateString, "Fecha no válida"),
+  reason: z.preprocess((v) => (typeof v === "string" && v.trim() === "" ? null : v), z.string().trim().max(200).nullish()).transform((v) => v ?? null),
 });

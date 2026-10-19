@@ -10,6 +10,8 @@ import { madridParts } from "@/lib/modules/format";
 import {
   appointmentFormToInput,
   appointmentSchema,
+  availabilityExceptionSchema,
+  availabilityRuleSchema,
   resourceSchema,
   toAppointmentRow,
 } from "./schema";
@@ -100,6 +102,7 @@ export async function createResource(fd: FormData) {
     name: fd.get("name"),
     kind: fd.get("kind"),
     color: fd.get("color"),
+    slot_minutes: fd.get("slot_minutes") || "60",
   });
   if (!parsed.success) redirect("/settings/resources?error=1");
   const supabase = await createClient();
@@ -114,12 +117,59 @@ export async function updateResource(id: string, fd: FormData) {
     name: fd.get("name"),
     kind: fd.get("kind"),
     color: fd.get("color"),
+    slot_minutes: fd.get("slot_minutes") || "60",
   });
   if (!parsed.success) redirect("/settings/resources?error=1");
   const supabase = await createClient();
   const { error } = await supabase
     .from("resources")
-    .update({ ...parsed.data, active: fd.get("active") === "on" })
+    .update({ ...parsed.data, active: fd.get("active") === "on", public_booking: fd.get("public_booking") === "on" })
     .eq("id", id);
   redirect(error ? "/settings/resources?error=1" : "/settings/resources?saved=1");
+}
+
+// --------------------------------------------------------------- availability
+
+export async function addAvailabilityRule(resourceId: string, fd: FormData) {
+  const role = await getCurrentRole();
+  const back = `/settings/resources/${resourceId}/availability`;
+  if (!role || !isStaffRole(role) || !z.uuid().safeParse(resourceId).success) redirect("/settings/resources");
+  const parsed = availabilityRuleSchema.safeParse({
+    weekday: fd.get("weekday"),
+    start_time: fd.get("start_time"),
+    end_time: fd.get("end_time"),
+  });
+  if (!parsed.success) redirect(`${back}?error=${encodeURIComponent(parsed.error.issues[0].message)}`);
+  const supabase = await createClient();
+  const { error } = await supabase.from("availability_rules").insert({ resource_id: resourceId, ...parsed.data });
+  redirect(error ? `${back}?error=${encodeURIComponent("No se pudo guardar el horario")}` : back);
+}
+
+export async function deleteAvailabilityRule(resourceId: string, ruleId: string) {
+  const role = await getCurrentRole();
+  if (role && isStaffRole(role) && z.uuid().safeParse(ruleId).success) {
+    const supabase = await createClient();
+    await supabase.from("availability_rules").delete().eq("id", ruleId);
+  }
+  redirect(`/settings/resources/${resourceId}/availability`);
+}
+
+export async function addAvailabilityException(resourceId: string, fd: FormData) {
+  const role = await getCurrentRole();
+  const back = `/settings/resources/${resourceId}/availability`;
+  if (!role || !isStaffRole(role) || !z.uuid().safeParse(resourceId).success) redirect("/settings/resources");
+  const parsed = availabilityExceptionSchema.safeParse({ date: fd.get("date"), reason: fd.get("reason") });
+  if (!parsed.success) redirect(`${back}?error=${encodeURIComponent(parsed.error.issues[0].message)}`);
+  const supabase = await createClient();
+  const { error } = await supabase.from("availability_exceptions").insert({ resource_id: resourceId, ...parsed.data });
+  redirect(error ? `${back}?error=${encodeURIComponent("Ya hay una excepción para ese día")}` : back);
+}
+
+export async function deleteAvailabilityException(resourceId: string, exceptionId: string) {
+  const role = await getCurrentRole();
+  if (role && isStaffRole(role) && z.uuid().safeParse(exceptionId).success) {
+    const supabase = await createClient();
+    await supabase.from("availability_exceptions").delete().eq("id", exceptionId);
+  }
+  redirect(`/settings/resources/${resourceId}/availability`);
 }

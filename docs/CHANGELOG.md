@@ -88,5 +88,14 @@
 - Ejecución mediante triggers de Postgres (`cases_automations`, `opportunities_automations`); un fallo en una acción nunca bloquea el cambio de estado real.
 - Migración `…1800000200_automations` (tablas `automations`, `automation_runs`, `automation_settings`; extensiones `pgcrypto` y `pg_net`).
 
+### Reserva online / formularios web
+- Página pública `/book/[slug]` (lista de recursos reservables) y `/book/[slug]/[resourceId]` (calendario de 21 días + huecos + formulario), sin inicio de sesión.
+- Ajustes → Recursos: marcar un recurso como "Reservable online", duración del hueco y enlace público para compartir; pantalla de horarios semanales y días bloqueados (festivos, vacaciones) por recurso.
+- Solo tres funciones `SECURITY DEFINER` otorgadas a `anon` (info del recurso, huecos libres, crear reserva); ninguna tabla se expone directamente al rol anónimo.
+- Protección anti-abuso: límite de 8 intentos por IP y hora (la IP se calcula en el servidor a partir de las cabeceras, nunca la envía el cliente), campo trampa oculto ("honeypot") que descarta envíos de bots en silencio, y mensajes de error genéricos (nunca se filtra el error real de Postgres a un visitante anónimo).
+- La cita creada queda en estado "pendiente" hasta que el equipo la confirme desde la agenda interna.
+- Migración `…1019000100_online_booking` (tablas `availability_rules`, `availability_exceptions`, `public_booking_attempts`; columnas `resources.public_booking` y `resources.slot_minutes`).
+
 ### Pendiente (siguiente)
 - Fusión de duplicados, relaciones entre contactos, CSV, filtros guardados, columnas configurables, compartir contactos desde la UI.
+- IA propia (resúmenes con modelo auto-alojado, sin salida de datos a terceros).
