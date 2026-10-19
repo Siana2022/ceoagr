@@ -40,6 +40,9 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
           <Link href="/settings/audit" className="btn btn-secondary btn-sm">Registro de actividad</Link>
         )}
         {(role === "owner" || role === "admin") && (
+          <Link href="/settings/automations" className="btn btn-secondary btn-sm">Automatizaciones</Link>
+        )}
+        {(role === "owner" || role === "admin") && (
           <Link href="/settings/branding" className="btn btn-secondary btn-sm">Identidad de la empresa</Link>
         )}
       </nav>

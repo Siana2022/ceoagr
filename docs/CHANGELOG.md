@@ -82,5 +82,11 @@
 - Mismo mecanismo de contactos (vistas privadas o compartidas con el equipo) ahora también en la lista de expedientes (vista tabla), tareas (vista lista) y oportunidades.
 - Componente compartido `components/views/SavedViews.tsx` reutilizado por las cuatro listas.
 
+### Automatizaciones (RPA) con webhooks hacia n8n
+- Ajustes → Automatizaciones: reglas "cuando un expediente/oportunidad llega a un estado → crear tarea y/o llamar a un webhook", gestionadas por owner/admin.
+- Webhooks salientes firmados con HMAC (clave por organización, regenerable); registro de cada ejecución (correcta o con error) consultable en la misma pantalla.
+- Ejecución mediante triggers de Postgres (`cases_automations`, `opportunities_automations`); un fallo en una acción nunca bloquea el cambio de estado real.
+- Migración `…1800000200_automations` (tablas `automations`, `automation_runs`, `automation_settings`; extensiones `pgcrypto` y `pg_net`).
+
 ### Pendiente (siguiente)
 - Fusión de duplicados, relaciones entre contactos, CSV, filtros guardados, columnas configurables, compartir contactos desde la UI.
